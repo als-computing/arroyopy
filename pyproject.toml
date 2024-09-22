@@ -1,0 +1,48 @@
+[project]
+name = "als_arroyo"
+version = "0.0.1"
+authors = [
+    { name="Dylan McReynolds", email="dmcreynolds@lbl.gov"},
+]
+description = "a library for processing streams of data"
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "astropy",
+    "python-dotenv",
+    "pandas",
+    "numpy",
+    "pyzmq",
+    "tiled[client]==v0.1.a122",
+    "typer",
+    "zarr"
+]
+
+[project.optional-dependencies]
+# These are required for developing the package (running the tests, building
+# the documentation) but not necessarily required for _using_ it.
+dev = [
+    "flake8",
+    "pre-commit",
+    "pytest-mock",
+    "tiled[server]",
+]
+
+notebook = [
+    "jupyterlab",
+    "matplotlib",
+    "python-dotenv"
+]
+
+[project.urls]
+Homepage = "https://github.com/als-computing/als_arroyo"
+Issues = "https://github.com/als-computing/als_arroyo/issues"
+
+
+[tool.isort]
+profile = "black"
