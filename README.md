@@ -25,20 +25,20 @@ classDiagram
     class AbstractListener{
         operator: AbstractOperator
         parser: AbstractMessageParser
-        start(): None  
-        stop(): None
+        *start(): None  
+        *stop(): None
     }
 
 
     class AbstractOperator{
         publisher: AbstractPublisher
-        receive(Event): None
-        publish(Event): None
+        *receive(Event): None
+        *publish(Event): None
 
     }
 
     class AbstractPublisher{
-        publish(): None
+        *publish(): None
     }
 
     class Message{
@@ -77,7 +77,7 @@ classDiagram
     }
 
     class AbstractMessageParser{
-        parse(bytes): Union[Start, Strop, Event]
+        *parse(bytes): Union[Start, Strop, Event]
     }
 
     AbstractListener <|-- ZMQListener
