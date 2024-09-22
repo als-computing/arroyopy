@@ -105,15 +105,15 @@ TODO: parent class labels
 sequenceDiagram
     autonumber
     ExternalPublisher ->> ZMQPubSubListener: publish(bytes)
+    loop receiving thread
+        activate ZMQPubSubListener
+            ZMQPubSubListener ->> ConcreteMessageParser: parse(bytes)
+            ZMQPubSubListener ->> MessageQueue: put(bytes)
+        deactivate ZMQPubSubListener
 
-    activate ZMQPubSubListener
-        ZMQPubSubListener ->> ConcreteMessageParser: parse(bytes)
-        ZMQPubSubListener ->> MessageQueue: put(bytes)
-    deactivate ZMQPubSubListener
-
-    
-    ZMQPubSubListener ->> MessageQueue: message(Message)
-
+        
+        ZMQPubSubListener ->> MessageQueue: message(Message)
+    end
     activate ConcreteOperator
         loop polling thread
             ConcreteOperator ->> MessageQueue: get(bytes)
