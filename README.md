@@ -10,8 +10,6 @@ This library is intended to provide abstract classes, and will also include more
 
 
 
-
-
 ```mermaid
 ---
 title: Some sweet classes
@@ -22,22 +20,26 @@ note: I guess we use "None" instead of "void"
 classDiagram
 
     class AbstractListener{
-        operator: AbstractEventOperator
-
+        operator: AbstractOperator
+        parser: AbstractMessageParser
         start(): None  
         stop(): None
     }
 
 
-    class AbstractEventOperator{
+    class AbstractOperator{
         publisher: AbstractPublisher
-        start(Start): None
-        stop(Start): None
-        event(Event): None
+        receive(Event): None
+        publish(Event): None
+
     }
 
     class AbstractPublisher{
         publish(): None
+    }
+
+    class Message{
+
     }
 
    class ZMQPublisher{
@@ -71,17 +73,52 @@ classDiagram
 
     }
 
+    class AbstractMessageParser{
+        parse(bytes): Union[Start, Strop, Event]
+    }
+
     AbstractListener <|-- ZMQListener
     ZMQListener <|-- ZMQPubSubListener
-    AbstractListener o-- AbstractEventOperator
-
+    AbstractListener o-- AbstractOperator
+    AbstractListener o-- AbstractMessageParser
 
     AbstractPublisher <|-- ZMQPublisher
     ZMQPublisher <|-- ZMQPubSubPublisher
 
 
-    AbstractEventOperator o-- AbstractPublisher
+    AbstractOperator o-- AbstractPublisher
+    Message <|-- Start
+    Message <|-- Stop
+    Message <|-- Event 
+    
+
+```
+##
+In-process, listening for ZMQ
+
+Note that this leaves Concrete classes undefined as placeholders
+
+TODO: thread groups, parent class labels
+
+```mermaid
+
+sequenceDiagram
+    ExternalListener ->> ZMQPubSubListener: publish(bytes)
+
+    activate ZMQPubSubListener
+        ZMQPubSubListener ->> ConcreteMessageParser: parse(bytes)
+        ZMQPubSubListener ->> MessageQueue: put(bytes)
+    deactivate ZMQPubSubListener
 
     
+    ZMQPubSubListener ->> MessageQueue: message(Message)
+
+    activate ConcreteOperator
+        ConcreteOperator ->> MessageQueue: get(bytes)
+        ConcreteOperator ->> ConcreteOperator: calculate()
+        ConcreteOperator ->> ConcretePublisher: publish
+    deactivate ConcreteOperator
+
+
 
 ```
