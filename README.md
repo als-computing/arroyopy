@@ -1,4 +1,7 @@
-# Arroyo is Spanish for stream
+# als_arroyo
+
+Arroyo is Spanish for stream.
+
 This is an initial design for a library intended to be used in a variety of streaming processing scenario.
 
 
