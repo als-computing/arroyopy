@@ -98,12 +98,13 @@ In-process, listening for ZMQ
 
 Note that this leaves Concrete classes undefined as placeholders
 
-TODO: thread groups, parent class labels
+TODO: parent class labels
 
 ```mermaid
 
 sequenceDiagram
-    ExternalListener ->> ZMQPubSubListener: publish(bytes)
+    autonumber
+    ExternalPublisher ->> ZMQPubSubListener: publish(bytes)
 
     activate ZMQPubSubListener
         ZMQPubSubListener ->> ConcreteMessageParser: parse(bytes)
@@ -114,11 +115,13 @@ sequenceDiagram
     ZMQPubSubListener ->> MessageQueue: message(Message)
 
     activate ConcreteOperator
-        ConcreteOperator ->> MessageQueue: get(bytes)
-        ConcreteOperator ->> ConcreteOperator: calculate()
-        ConcreteOperator ->> ConcretePublisher: publish
+        loop polling thread
+            ConcreteOperator ->> MessageQueue: get(bytes)
+        end
+        loop processing thread
+            ConcreteOperator ->> ConcreteOperator: calculate()
+        
+            ConcreteOperator ->> ConcretePublisher: publish()
+        end
     deactivate ConcreteOperator
-
-
-
 ```
