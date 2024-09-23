@@ -21,64 +21,74 @@ note: I guess we use "None" instead of "void"
 ---
 
 classDiagram
+    namespace listener{
 
-    class AbstractListener{
-        operator: AbstractOperator
-        parser: AbstractMessageParser
-        *start(): None  
-        *stop(): None
+        class AbstractListener{
+            operator: AbstractOperator
+            parser: AbstractMessageParser
+            *start(): None  
+            *stop(): None
+        }
+
+        class ZMQListener{
+            host: str
+            port: int
+        }
+
+        class ZMQPubSubListener{
+
+        }
     }
 
+    namespace operator{
+        class AbstractOperator{
+            publisher: AbstractPublisher
+            *receive(Event): None
+            *publish(Event): None
 
-    class AbstractOperator{
-        publisher: AbstractPublisher
-        *receive(Event): None
-        *publish(Event): None
-
+        }
     }
 
-    class AbstractPublisher{
-        *publish(): None
+    namespace publisher{
+        class AbstractPublisher{
+            *publish(): None
+        }
+        class ZMQPublisher{
+            host: str
+            port: int
+        }
+
+        class ZMQPubSubPublisher{
+
+        }
     }
 
-    class Message{
+    namespace message{
+        
+        class AbstractMessageParser{
+            *parse(bytes): Union[Start, Strop, Event]
+        }
+        
+        class Message{
 
+        }
+
+        class Start{
+            data: Dict
+        }
+    
+        class Stop{
+            data: Dict
+        }
+
+        class Event{
+            metadata: Dict
+            payload: bytes
+        }
     }
+ 
 
-   class ZMQPublisher{
-        host: str
-        port: int
-    }
-
-    class ZMQPubSubPublisher{
-
-    }
-
-    class Start{
-        data: Dict
-    }
-   
-    class Stop{
-        data: Dict
-    }
-
-    class Event{
-        metadata: Dict
-        payload: bytes
-    }
-
-    class ZMQListener{
-        host: str
-        port: int
-    }
-
-    class ZMQPubSubListener{
-
-    }
-
-    class AbstractMessageParser{
-        *parse(bytes): Union[Start, Strop, Event]
-    }
+ 
 
     AbstractListener <|-- ZMQListener
     ZMQListener <|-- ZMQPubSubListener
