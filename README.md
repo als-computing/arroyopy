@@ -9,11 +9,12 @@ This is intended to provide classes that can be used in a wide variety of proces
 - Single process
 - Chain of processes where listening, processing and publishing can linked together through a protocol like ZMQ. One process's publisher can communicate with another process's listener, etc.
 
-This library is intended to provide abstract classes, and will also include more specific common subclasses, like those that communicate over ZMQ.
+This library is intended to provide abstract classes, and will also include more specific common subclasses, like those that communicate over ZMQ or Redis.
 
 
 
 ```mermaid
+
 ---
 title: Some sweet classes
 
@@ -104,7 +105,7 @@ classDiagram
     Message <|-- Stop
     Message <|-- Event 
     
-
+     
 ```
 ##
 In-process, listening for ZMQ
@@ -138,3 +139,4 @@ sequenceDiagram
         end
     deactivate ConcreteOperator
 ```
+
