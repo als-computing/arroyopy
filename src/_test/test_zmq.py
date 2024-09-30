@@ -1,29 +1,14 @@
-import pytest
+import asyncio
 from queue import Queue, Empty
 import threading
-import time
+
+import pytest
 import zmq
 import zmq.asyncio
 
+
 from als_arroyo.zmq import ZMQListener
-from als_arroyo.operator import AbstractOperator
-from als_arroyo.publisher import AbstractPublisher
-
-
-class TestOperator(AbstractOperator):
-    def __init__(self, publisher: AbstractPublisher):
-        super().__init__()
-        self.publisher = publisher
-
-    def run(self, data: str):
-        self.publisher.publish(data)
-
-
-class TestPublisher(AbstractPublisher):
-    current_data = None
-
-    async def publish(self, data):
-        self.current_message = data
+from .mocks import MockOperator, MockPublisher
 
 
 # Fixture to launch a ZMQ publisher that waits for test input to publish messages
@@ -60,25 +45,33 @@ def zmq_publisher():
     context.term()
 
 
-def test_zmq(zmq_publisher):
+@pytest.mark.asyncio
+async def test_zmq(zmq_publisher):
     context = zmq.asyncio.Context()
     subscriber = context.socket(zmq.SUB)
     subscriber.connect("tcp://127.0.0.1:5555")
     subscriber.setsockopt_string(zmq.SUBSCRIBE, "")  # Subscribe to all topics
 
-    publisher = TestPublisher()
-    operator = TestOperator(publisher)
+    publisher = MockPublisher()
+    operator = MockOperator(publisher)
 
     listener = ZMQListener(operator, subscriber)
-    listener.start()
+    await listener.start()
 
     # Send a specific message via the publisher
     test_message = "Don't Panic!"
-    zmq_publisher("test_message")
+    zmq_publisher(test_message)
+    asyncio.sleep(0.1)
+    result_message = publisher.current_message = test_message
+    assert result_message == test_message
+
+    test_message = "Don't Panic! 2"
+    zmq_publisher(test_message)
     time.sleep(0.1)
     result_message = publisher.current_message = test_message
     assert result_message == test_message
 
 
+@pytest.mark.asyncio
 def test_factories():
     ...

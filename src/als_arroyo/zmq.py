@@ -60,12 +60,14 @@ class ZMQListener(AbstractListener):
         return ZMQListener(zmq_socket)
 
     async def start(self):
+        print("foo")
         logger.info("Listener started")
-        raw_msg = await self.zmq_socket.recv_multipart()
-        msg = self.parser.parse(raw_msg)
-        if logger.getEffectiveLevel() == logging.DEBUG:
-            logger.debug(f"{msg=}")
-        await self.operator.run(msg)
+        while True:
+            raw_msg = await self.zmq_socket.recv_multipart()
+            msg = self.parser.parse(raw_msg)
+            if logger.getEffectiveLevel() == logging.DEBUG:
+                logger.debug(f"{msg=}")
+            await self.operator.run(msg)
 
     async def stop(self):
         self.zmq_socket.close()

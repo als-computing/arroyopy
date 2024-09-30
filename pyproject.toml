@@ -26,8 +26,11 @@ dependencies = [
 dev = [
     "flake8",
     "pre-commit",
+    "pytest",
+    "pytest-asyncio",
     "pytest-mock",
     "tiled[server]",
+    "fakeredis"
 ]
 
 zmq = [

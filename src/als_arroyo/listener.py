@@ -9,7 +9,6 @@ class AbstractListener(ABC):
     operator: AbstractOperator
     parser: AbstractMessageParser
 
-
     @abstractmethod
     async def start(self):
         pass
