@@ -3,6 +3,7 @@ from queue import Queue, Empty
 import threading
 
 import pytest
+import pytest_asyncio
 import zmq
 import zmq.asyncio
 
@@ -44,18 +45,22 @@ def zmq_publisher():
     publisher.close()
     context.term()
 
-
-@pytest.mark.asyncio
-async def test_zmq(zmq_publisher):
+@pytest.fixture
+async def zmq_subscriber()
     context = zmq.asyncio.Context()
     subscriber = context.socket(zmq.SUB)
     subscriber.connect("tcp://127.0.0.1:5555")
     subscriber.setsockopt_string(zmq.SUBSCRIBE, "")  # Subscribe to all topics
+    yield subscriber
+    subscriber.disconnect()
 
+@pytest.mark.asyncio
+async def test_zmq(zmq_publisher, zmq_subscriber):
+    # this uses a 
     publisher = MockPublisher()
     operator = MockOperator(publisher)
 
-    listener = ZMQListener(operator, subscriber)
+    listener = ZMQListener(operator, zmq_subscriber)
     await listener.start()
 
     # Send a specific message via the publisher
@@ -67,11 +72,12 @@ async def test_zmq(zmq_publisher):
 
     test_message = "Don't Panic! 2"
     zmq_publisher(test_message)
-    time.sleep(0.1)
+    asyncio.sleep(0.1)
     result_message = publisher.current_message = test_message
     assert result_message == test_message
 
 
 @pytest.mark.asyncio
-def test_factories():
-    ...
+def test_from_socket(zmq_subscriber):
+    # zmq_listener = ZMQListener()
+    pass

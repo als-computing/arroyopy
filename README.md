@@ -31,14 +31,7 @@ classDiagram
             *stop(): None
         }
 
-        class ZMQListener{
-            host: str
-            port: int
-        }
-
-        class ZMQPubSubListener{
-
-        }
+        
     }
 
     namespace operator{
@@ -54,14 +47,7 @@ classDiagram
         class AbstractPublisher{
             *publish(): None
         }
-        class ZMQPublisher{
-            host: str
-            port: int
-        }
 
-        class ZMQPubSubPublisher{
-
-        }
     }
 
     namespace message{
@@ -88,6 +74,37 @@ classDiagram
         }
     }
  
+    namespace zmq{
+        class ZMQListener{
+            host: str
+            port: int
+        }
+
+        class ZMQPubSubListener{
+
+        }
+
+        class ZMQPublisher{
+            host: str
+            port: int
+        }
+
+        class ZMQPubSubPublisher{
+
+        }
+    }
+
+    namespace redis{
+
+        class RedisListener{
+
+        }
+
+        class RedisPublisher{
+
+        }
+
+    }
 
  
 
@@ -99,7 +116,8 @@ classDiagram
     AbstractPublisher <|-- ZMQPublisher
     ZMQPublisher <|-- ZMQPubSubPublisher
 
-
+    AbstractPubliser <|-- RedisPublisher
+    AbstractListener <|-- RedisListener
     AbstractOperator o-- AbstractPublisher
     Message <|-- Start
     Message <|-- Stop

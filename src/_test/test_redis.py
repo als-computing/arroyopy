@@ -1,8 +1,10 @@
+import asyncio
+
+import fakeredis.aioredis as fakeredis
 import pytest
 import pytest_asyncio
-import asyncio
-from als_arroyo.redis import RedisListener, REDIS_CHANNEL_NAME 
-import fakeredis.aioredis as fakeredis
+
+from als_arroyo.redis import RedisListener, REDIS_CHANNEL_NAME
 
 
 @pytest_asyncio.fixture
@@ -50,8 +52,6 @@ async def test_from_client(operator_mock, message_parser_mock, redis_client, red
 
 @pytest.mark.asyncio
 async def test_start(redis_listener, redis_pub_sub, redis_client, operator_mock):
-
-    
     # Arrange
     async def send_messages():
         await asyncio.sleep(0.1)  # Give some time for the listener to start
@@ -64,7 +64,6 @@ async def test_start(redis_listener, redis_pub_sub, redis_client, operator_mock)
     # Mock parser to decode bytes to string
     redis_listener.parser.parse.side_effect = lambda x: x.decode() if x else None
     asyncio.create_task(redis_listener.start())
-    # asyncio.sleep(1)
 
     await send_messages()
     # Assert

@@ -37,34 +37,13 @@ class ZMQListener(AbstractListener):
         """
         return ZMQListener(zmq_socket)
 
-    @classmethod
-    def from_address(cls, zmq_address: str, zmq_port: int):
-        """Convenience factory that sets up a Pub/Sub listening ZMQSocket
-        using an asyncio zmq context.
-
-
-        Parameters
-        ----------
-        address : str
-            zmq address (IP address or hostname)
-        port : int
-            zmq port
-        """
-
-        ctx = zmq.asyncio.Context()
-        zmq_socket = ctx.socket(zmq.SUB)
-        logger.info(f"binding to: {zmq_address}:{zmq_port}")
-        zmq_socket.connect(f"{zmq_address}:{zmq_port}")
-        zmq_socket.setsockopt(zmq.SUBSCRIBE, b"")
-
-        return ZMQListener(zmq_socket)
 
     async def start(self):
         print("foo")
         logger.info("Listener started")
         while True:
             raw_msg = await self.zmq_socket.recv_multipart()
-            msg = self.parser.parse(raw_msg)
+            msg = await self.parser.parse(raw_msg)
             if logger.getEffectiveLevel() == logging.DEBUG:
                 logger.debug(f"{msg=}")
             await self.operator.run(msg)
