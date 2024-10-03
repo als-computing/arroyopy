@@ -1,5 +1,5 @@
 [project]
-name = "als_arroyo"
+name = "arroyo"
 version = "0.0.1"
 authors = [
     { name="Dylan McReynolds", email="dmcreynolds@lbl.gov"},
