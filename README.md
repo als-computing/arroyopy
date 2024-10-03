@@ -116,7 +116,7 @@ classDiagram
     AbstractPublisher <|-- ZMQPublisher
     ZMQPublisher <|-- ZMQPubSubPublisher
 
-    AbstractPubliser <|-- RedisPublisher
+    AbstractPublisher <|-- RedisPublisher
     AbstractListener <|-- RedisListener
     AbstractOperator o-- AbstractPublisher
     Message <|-- Start

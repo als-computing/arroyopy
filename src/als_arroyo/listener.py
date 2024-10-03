@@ -10,9 +10,9 @@ class AbstractListener(ABC):
     parser: AbstractMessageParser
 
     @abstractmethod
-    async def start(self):
+    async def start(self) -> None:
         pass
 
     @abstractmethod
-    async def stop(self):
+    async def stop(self) -> None:
         pass

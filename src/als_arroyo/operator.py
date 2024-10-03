@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 from .publisher import AbstractPublisher
+from .message import Event
 
 
 class AbstractOperator(ABC):
@@ -8,5 +9,5 @@ class AbstractOperator(ABC):
     publisher: AbstractPublisher
 
     @abstractmethod
-    async def run(self, message):
+    async def Event(self, event: Event) -> None:
         pass

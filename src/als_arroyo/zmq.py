@@ -1,3 +1,4 @@
+from abc import abstractmethod
 import logging
 
 import zmq
@@ -37,6 +38,16 @@ class ZMQListener(AbstractListener):
         """
         return ZMQListener(zmq_socket)
 
+    @abstractmethod
+    async def start(self):
+        pass
+
+    async def stop(self):
+        self.zmq_socket.close()
+        self.zmq_socket.context.term()
+
+
+class ZMQPubSubListener(AbstractListener):
 
     async def start(self):
         print("foo")
@@ -48,6 +59,3 @@ class ZMQListener(AbstractListener):
                 logger.debug(f"{msg=}")
             await self.operator.run(msg)
 
-    async def stop(self):
-        self.zmq_socket.close()
-        self.zmq_socket.context.term()

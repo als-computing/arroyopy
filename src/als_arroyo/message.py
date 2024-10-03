@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from pydantic import BaseModel
+from typing import List
 
 
 class Message(BaseModel):
@@ -22,5 +23,5 @@ class Event(Message):
 class AbstractMessageParser(ABC):
 
     @abstractmethod
-    async def parse(self, message: bytes):
+    async def parse(self, message: List[bytes]):
         pass
