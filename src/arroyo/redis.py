@@ -6,7 +6,7 @@ from redis.asyncio import Redis
 
 
 from .listener import AbstractListener
-from .message import AbstractMessageParser
+from .schemas import AbstractMessageParser
 from .operator import AbstractOperator
 
 

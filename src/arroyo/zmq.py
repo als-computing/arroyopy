@@ -12,6 +12,8 @@ logger = logging.getLogger("arroyo.zmq")
 
 class ZMQListener(AbstractListener):
 
+    stop_signal: bool = False
+
     def __init__(
             self,
             operator: AbstractOperator,
@@ -37,7 +39,6 @@ class ZMQListener(AbstractListener):
         """
         return ZMQListener(zmq_socket)
 
-
     async def start(self):
         print("foo")
         logger.info("Listener started")
@@ -49,5 +50,6 @@ class ZMQListener(AbstractListener):
             await self.operator.run(msg)
 
     async def stop(self):
+        self.stop_signal = True
         self.zmq_socket.close()
         self.zmq_socket.context.term()
