@@ -6,7 +6,6 @@ from redis.asyncio import Redis
 
 
 from .listener import AbstractListener
-from .schemas import AbstractMessageParser
 from .operator import AbstractOperator
 
 
@@ -20,12 +19,11 @@ class RedisListener(AbstractListener):
     def __init__(
             self,
             operator: AbstractOperator,
-            message_parser: AbstractMessageParser,
             redis_client: Redis,
             redis_pubsub):
 
         self.operator = operator
-        self.message_parser = message_parser
+
         self.redis_client: Redis = redis_client
         self.redis_pub_sub = redis_pubsub
 
@@ -33,10 +31,9 @@ class RedisListener(AbstractListener):
     async def from_client(
             cls,
             operator: AbstractOperator,
-            message_parser: AbstractMessageParser,
             redis_client: Redis,
             redis_pub_sub):
-        return RedisListener(operator, message_parser, redis_client, redis_pub_sub)
+        return RedisListener(operator, redis_client, redis_pub_sub)
 
     async def start(self):
         logger.info("Listener started")
