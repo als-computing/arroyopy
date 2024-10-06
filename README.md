@@ -26,7 +26,7 @@ classDiagram
 
         class AbstractListener{
             operator: AbstractOperator
-            parser: AbstractMessageParser
+
             *start(): None  
             *stop(): None
         }
@@ -36,25 +36,22 @@ classDiagram
 
     namespace operator{
         class AbstractOperator{
-            publisher: AbstractPublisher
-            *receive(Event): None
-            *publish(Event): None
+            publisher: List[AbstractPublisher]
+            *process(Event): None
+            add_publisher(AbstractPublisher): None
+            remove_publisher(AbstractPublisher): None
 
         }
     }
 
     namespace publisher{
         class AbstractPublisher{
-            *publish(): None
+            *publish(Message): None
         }
 
     }
 
     namespace message{
-        
-        class AbstractMessageParser{
-            *parse(bytes): Union[Start, Strop, Event]
-        }
         
         class Message{
 
@@ -111,12 +108,11 @@ classDiagram
     AbstractListener <|-- ZMQListener
     ZMQListener <|-- ZMQPubSubListener
     AbstractListener o-- AbstractOperator
-    AbstractListener o-- AbstractMessageParser
 
     AbstractPublisher <|-- ZMQPublisher
     ZMQPublisher <|-- ZMQPubSubPublisher
 
-    AbstractPubliser <|-- RedisPublisher
+    AbstractPublisher <|-- RedisPublisher
     AbstractListener <|-- RedisListener
     AbstractOperator o-- AbstractPublisher
     Message <|-- Start
