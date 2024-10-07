@@ -8,45 +8,34 @@ import zmq
 import zmq.asyncio
 
 
-from als_arroyo.zmq import ZMQListener
+from arroyo.zmq import ZMQListener
 from .mocks import MockOperator, MockPublisher
 
 
 # Fixture to launch a ZMQ publisher that waits for test input to publish messages
-@pytest.fixture(scope="function")
-def zmq_publisher():
-    context = zmq.Context()
-    publisher = context.socket(zmq.PUB)
-    publisher.bind("tcp://127.0.0.1:5555")
+@pytest_asyncio.fixture
+async def zmq_publisher():     
+    class TestPublisher():
 
-    # Queue to receive messages from the test to publish
-    message_queue = Queue()
+        def __init__(self):
+            self.context = zmq.asyncio.Context()
+            self.socket = self.context.socket(zmq.PUB)
 
-    def publish():
-        while True:
-            try:
-                # Block until a message is available, with a small timeout to allow shutdown
-                message = message_queue.get(timeout=0.1)
-                publisher.send_string(message)
-            except Empty:
-                continue
+        def start(self):
+            self.socket.bind("tcp://127.0.0.1:5555")
 
-    # Start the publisher thread that will wait for messages to publish
-    publisher_thread = threading.Thread(target=publish, daemon=True)
-    publisher_thread.start()
+        async def send_message(self, message):
+            """Function that test will call to send a message to the publisher."""
+            await self.socket.send(message)
 
-    def send_message(message):
-        """Function that test will call to send a message to the publisher."""
-        message_queue.put(message)
+        def stop(self):
+            # After the test is done, cleanup
+            self.socket.close()
+            self.context.term()
+    return TestPublisher()
 
-    yield send_message  # Yield the function to the test
-
-    # After the test is done, cleanup
-    publisher.close()
-    context.term()
-
-@pytest.fixture
-async def zmq_subscriber()
+@pytest_asyncio.fixture
+async def zmq_subscriber():
     context = zmq.asyncio.Context()
     subscriber = context.socket(zmq.SUB)
     subscriber.connect("tcp://127.0.0.1:5555")
@@ -54,27 +43,29 @@ async def zmq_subscriber()
     yield subscriber
     subscriber.disconnect()
 
+
+@pytest_asyncio.fixture
+async def zmq_listener(operator_mock, zmq_subscriber):
+    return ZMQListener(operator_mock, zmq_subscriber)
+
+
 @pytest.mark.asyncio
-async def test_zmq(zmq_publisher, zmq_subscriber):
-    # this uses a 
-    publisher = MockPublisher()
-    operator = MockOperator(publisher)
+async def test_zmq(zmq_listener, zmq_publisher, operator_mock):
 
-    listener = ZMQListener(operator, zmq_subscriber)
-    await listener.start()
+    async def send_messages():
+        await asyncio.sleep(0.2)
+        await zmq_publisher.send_message(b"message1")
+        await asyncio.sleep(0.2)
+        await zmq_publisher.send_message(b"message2")
+        await asyncio.sleep(0.2)
+        await zmq_listener.stop()
 
-    # Send a specific message via the publisher
-    test_message = "Don't Panic!"
-    zmq_publisher(test_message)
-    asyncio.sleep(0.1)
-    result_message = publisher.current_message = test_message
-    assert result_message == test_message
-
-    test_message = "Don't Panic! 2"
-    zmq_publisher(test_message)
-    asyncio.sleep(0.1)
-    result_message = publisher.current_message = test_message
-    assert result_message == test_message
+    zmq_publisher.start()
+    listener_task = asyncio.create_task(zmq_listener.start())
+    await send_messages()
+    await listener_task
+    operator_mock.process.assert_any_await(b"message1")  # Check operator run with first message
+    operator_mock.process.assert_any_await(b"message2")  # Check operator run with second messag
 
 
 @pytest.mark.asyncio

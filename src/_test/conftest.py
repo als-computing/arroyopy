@@ -9,10 +9,5 @@ def operator_mock():
 
 
 @pytest.fixture
-def message_parser_mock():
-    return AsyncMock()
-
-
-@pytest.fixture
 def publisher_mock():
     return AsyncMock()

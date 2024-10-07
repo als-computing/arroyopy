@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 import zmq
@@ -18,7 +19,7 @@ class ZMQListener(AbstractListener):
             self,
             operator: AbstractOperator,
             zmq_socket: zmq.Socket):
-
+        self.stop_requested = False
         self.operator = operator
         self.zmq_socket = zmq_socket
 
@@ -40,16 +41,26 @@ class ZMQListener(AbstractListener):
         return ZMQListener(zmq_socket)
 
     async def start(self):
-        print("foo")
         logger.info("Listener started")
+        # timeout after 100 milliseconds so we can be stopped if requested
+        self.zmq_socket.setsockopt(zmq.RCVTIMEO, 100)
         while True:
-            raw_msg = await self.zmq_socket.recv_multipart()
-            msg = await self.parser.parse(raw_msg)
-            if logger.getEffectiveLevel() == logging.DEBUG:
-                logger.debug(f"{msg=}")
-            await self.operator.run(msg)
+            if self.stop_requested:
+                return
+            try:
+                msg = await self.zmq_socket.recv()
+                if logger.getEffectiveLevel() == logging.DEBUG:
+                    logger.debug(f"{msg=}")
+                await self.operator.process(msg)
+            except zmq.Again:
+                # no message occured within the timeout period
+                pass
+            except asyncio.exceptions.CancelledError:
+                # in case this is being done in a asyncio.create_task call
+                pass
+  
 
     async def stop(self):
-        self.stop_signal = True
+        self.stop_requested = True
         self.zmq_socket.close()
         self.zmq_socket.context.term()

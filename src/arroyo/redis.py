@@ -23,7 +23,7 @@ class RedisListener(AbstractListener):
             redis_pubsub):
 
         self.operator = operator
-
+        self.stop_requested = False
         self.redis_client: Redis = redis_client
         self.redis_pub_sub = redis_pubsub
 
@@ -38,15 +38,18 @@ class RedisListener(AbstractListener):
     async def start(self):
         logger.info("Listener started")
         while True:
+            if self.stop_requested:
+                return
             # get_message blocks until timeout, returning None if no message in that time
-            raw_msg = await self.redis_pub_sub.get_message(ignore_subscribe_messages=True, timeout=20.0)
+            raw_msg = await self.redis_pub_sub.get_message(ignore_subscribe_messages=True, timeout=1.0)
             if raw_msg is None:
                 continue
-            msg = await self.parser.parse(raw_msg['data'])
+            msg = raw_msg['data']
             if logger.getEffectiveLevel() == logging.DEBUG:
                 logger.debug(f"{msg=}")
-            await self.operator.run(msg)
+            await self.operator.process(msg)     
 
     async def stop(self):
-        self.pub_sub.close()
-        self.redis_client.close()
+        self.stop_requested = True
+        self.redis_pub_sub.aclose()
+        self.redis_client.aclose()

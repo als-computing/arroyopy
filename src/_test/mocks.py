@@ -1,5 +1,6 @@
-from als_arroyo.operator import AbstractOperator
-from als_arroyo.publisher import AbstractPublisher
+from arroyo.operator import AbstractOperator
+from arroyo.publisher import AbstractPublisher
+from arroyo.schemas import Message
 
 
 class MockOperator(AbstractOperator):
@@ -7,12 +8,12 @@ class MockOperator(AbstractOperator):
         super().__init__()
         self.publisher = publisher
 
-    def run(self, data: str):
+    def process(self, data: Message) -> None:
         self.publisher.publish(data)
 
 
 class MockPublisher(AbstractPublisher):
     current_data = None
 
-    async def publish(self, data):
-        self.current_message = data
+    async def publish(self, message: Message) -> None:
+        self.current_message = message
