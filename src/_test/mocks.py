@@ -1,10 +1,10 @@
-from arroyo.operator import AbstractOperator
-from arroyo.publisher import AbstractPublisher
+from arroyo.operator import Operator
+from arroyo.publisher import Publisher
 from arroyo.schemas import Message
 
 
-class MockOperator(AbstractOperator):
-    def __init__(self, publisher: AbstractPublisher):
+class MockOperator(Operator):
+    def __init__(self, publisher: Publisher):
         super().__init__()
         self.publisher = publisher
 
@@ -12,7 +12,7 @@ class MockOperator(AbstractOperator):
         self.publisher.publish(data)
 
 
-class MockPublisher(AbstractPublisher):
+class MockPublisher(Publisher):
     current_data = None
 
     async def publish(self, message: Message) -> None:
