@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 
-from .operator import AbstractOperator
+from .operator import Operator
 
 
-class AbstractListener(ABC):
+class Listener(ABC):
 
-    operator: AbstractOperator
+    operator: Operator
 
     @abstractmethod
     async def start(self) -> None:

@@ -4,20 +4,20 @@ import logging
 import zmq
 import zmq.asyncio
 
-from .listener import AbstractListener
-from .operator import AbstractOperator
+from .listener import Listener
+from .operator import Operator
 
 
 logger = logging.getLogger("arroyo.zmq")
 
 
-class ZMQListener(AbstractListener):
+class ZMQListener(Listener):
 
     stop_signal: bool = False
 
     def __init__(
             self,
-            operator: AbstractOperator,
+            operator: Operator,
             zmq_socket: zmq.Socket):
         self.stop_requested = False
         self.operator = operator
@@ -58,7 +58,6 @@ class ZMQListener(AbstractListener):
             except asyncio.exceptions.CancelledError:
                 # in case this is being done in a asyncio.create_task call
                 pass
-  
 
     async def stop(self):
         self.stop_requested = True

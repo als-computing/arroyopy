@@ -1,15 +1,21 @@
-# als_arroyo
+# Arroyo Stream Processing Toolset
 
-Arroyo is Spanish for stream.
+Processing event or streaming data presents several technological challenges. A variety of technologies are often used by scientific user facilities. ZMQ is used to stream data and messages in a peer-to-peer fashion. Message brokers like Kafka, Redis and RabbitMQ are often employed to route and pass messages from instruments to processing workflows. Arroyo provides an API and structure to flexibly integrate with these tools and incorporate arbitrarily complex processing workflows, letting the hooks to the workflow code be independent of the connection code and hence reusable at a variety of instruments. 
 
-This is an initial design for a library intended to be used in a variety of streaming processing scenario.
+The basic structure of building an arroyo implementation is to implement groups of several  classes:
+- 
+- `Operator` - receives `Messages` from a listener and can optionally send `Messages` to one or more `Publisher` instances
+- `Listener` - receives `Messages` from the external world, parse them into arroyo `Message` and sends them to an `Operator`
+- `Publisher` - receives `Messages` from a `Listener` and publishes them to the outside world
 
 
-This is intended to provide classes that can be used in a wide variety of processing scenarios
+
+
+Arroyo is un-opinionated about deployment decsions. It is intended support listener-operator-publisher groups in:
 - Single process
 - Chain of processes where listening, processing and publishing can linked together through a protocol like ZMQ. One process's publisher can communicate with another process's listener, etc.
 
-This library is intended to provide abstract classes, and will also include more specific common subclasses, like those that communicate over ZMQ or Redis.
+This library is intended to provide  classes, and will also include more specific common subclasses, like those that communicate over ZMQ or Redis.
 
 
 
@@ -24,8 +30,8 @@ note: I guess we use "None" instead of "void"
 classDiagram
     namespace listener{
 
-        class AbstractListener{
-            operator: AbstractOperator
+        class Listener{
+            operator: Operator
 
             *start(): None  
             *stop(): None
@@ -35,17 +41,17 @@ classDiagram
     }
 
     namespace operator{
-        class AbstractOperator{
-            publisher: List[AbstractPublisher]
-            *process(Event): None
-            add_publisher(AbstractPublisher): None
-            remove_publisher(AbstractPublisher): None
+        class Operator{
+            publisher: List[Publisher]
+            *process(Message): None
+            add_publisher(Publisher): None
+            remove_publisher(Publisher): None
 
         }
     }
 
     namespace publisher{
-        class AbstractPublisher{
+        class Publisher{
             *publish(Message): None
         }
 
@@ -73,12 +79,8 @@ classDiagram
  
     namespace zmq{
         class ZMQListener{
-            host: str
-            port: int
-        }
-
-        class ZMQPubSubListener{
-
+            operator: Operator
+            socket: zmq.Socket
         }
 
         class ZMQPublisher{
@@ -86,35 +88,33 @@ classDiagram
             port: int
         }
 
-        class ZMQPubSubPublisher{
-
-        }
     }
 
     namespace redis{
 
         class RedisListener{
-
+            operator: Redis.client
+            pubsub: Redis.pubsub
         }
 
         class RedisPublisher{
-
+            pubsub: Redis.pubsub
         }
 
     }
 
  
 
-    AbstractListener <|-- ZMQListener
+    Listener <|-- ZMQListener
     ZMQListener <|-- ZMQPubSubListener
-    AbstractListener o-- AbstractOperator
+    Listener o-- Operator
 
-    AbstractPublisher <|-- ZMQPublisher
+    Publisher <|-- ZMQPublisher
     ZMQPublisher <|-- ZMQPubSubPublisher
 
-    AbstractPublisher <|-- RedisPublisher
-    AbstractListener <|-- RedisListener
-    AbstractOperator o-- AbstractPublisher
+    Publisher <|-- RedisPublisher
+    Listener <|-- RedisListener
+    Operator o-- Publisher
     Message <|-- Start
     Message <|-- Stop
     Message <|-- Event 

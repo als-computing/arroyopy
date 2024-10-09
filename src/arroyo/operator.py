@@ -1,22 +1,22 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from .publisher import AbstractPublisher
+from .publisher import Publisher
 from .schemas import Message
 
 
-class AbstractOperator(ABC):
+class Operator(ABC):
 
-    publisher: List[AbstractPublisher] = []
+    publisher: List[Publisher] = []
 
     @abstractmethod
     async def process(self, message: Message) -> None:
         pass
 
-    def add_publisher(self, publisher: AbstractPublisher) -> None:
+    def add_publisher(self, publisher: Publisher) -> None:
         self.publisher.append(publisher)
 
-    def remove_publisher(self, publisher: AbstractPublisher) -> None:
+    def remove_publisher(self, publisher: Publisher) -> None:
         self.publisher.remove(publisher)
 
     async def publish(self, message: Message) -> None:

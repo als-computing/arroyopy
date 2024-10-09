@@ -5,8 +5,8 @@ import logging
 from redis.asyncio import Redis
 
 
-from .listener import AbstractListener
-from .operator import AbstractOperator
+from .listener import Listener
+from .operator import Operator
 
 
 logger = logging.getLogger("arroyo.zmq")
@@ -14,13 +14,13 @@ logger = logging.getLogger("arroyo.zmq")
 REDIS_CHANNEL_NAME = b"arroyo"
 
 
-class RedisListener(AbstractListener):
+class RedisListener(Listener):
 
     def __init__(
             self,
-            operator: AbstractOperator,
+            operator: Operator,
             redis_client: Redis,
-            redis_pubsub):
+            redis_pubsub: Redis.pubsub):
 
         self.operator = operator
         self.stop_requested = False
@@ -30,7 +30,7 @@ class RedisListener(AbstractListener):
     @classmethod
     async def from_client(
             cls,
-            operator: AbstractOperator,
+            operator: Operator,
             redis_client: Redis,
             redis_pub_sub):
         return RedisListener(operator, redis_client, redis_pub_sub)
