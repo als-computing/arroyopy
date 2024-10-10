@@ -6,10 +6,10 @@ from arroyo.schemas import Message
 class MockOperator(Operator):
     def __init__(self, publisher: Publisher):
         super().__init__()
-        self.publisher = publisher
+        self.publishers = publisher
 
     def process(self, data: Message) -> None:
-        self.publisher.publish(data)
+        self.publishers.publish(data)
 
 
 class MockPublisher(Publisher):
