@@ -41,7 +41,7 @@ async def zmq_subscriber():
     subscriber.connect("tcp://127.0.0.1:5555")
     subscriber.setsockopt_string(zmq.SUBSCRIBE, "")  # Subscribe to all topics
     yield subscriber
-    subscriber.disconnect()
+    subscriber.close()
 
 
 @pytest_asyncio.fixture
