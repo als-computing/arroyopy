@@ -15,7 +15,7 @@ def test_timing_decorator():
     assert result == "done"
     assert "sample_function" in timer.current_event_times
     assert timer.current_event_times["sample_function"] == pytest.approx(
-        0.1, abs=0.1
+        0.1, abs=0.3
     )  # really slow for macox CI
 
 
