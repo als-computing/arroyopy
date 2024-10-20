@@ -180,3 +180,7 @@ data/
 .code-workspace
 
 .pixi/
+
+# pixi environments
+.pixi
+*.egg-info
