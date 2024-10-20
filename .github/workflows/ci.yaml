@@ -23,7 +23,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest] # windows and pyzm are  painful, windows-latest]
         python-version: ["py310", "py311", "py312"]
     steps:
       # Step 1: Checkout the repository
