@@ -24,7 +24,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.10", "3.11", "3.12"]
     steps:
       # Step 1: Checkout the repository
       - name: Checkout repository
@@ -45,7 +45,9 @@ jobs:
       # Step 4: Install project dependencies with Pixi
       - name: Install dependencies with Pixi
         run: |
-          pixi install && pixi migrate
+          pixi init
+          pixi install
+          pixi install --dev
 
       # Step 5: Run tests
       - name: Run tests
