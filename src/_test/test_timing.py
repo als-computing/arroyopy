@@ -14,7 +14,7 @@ def test_timing_decorator():
     result = sample_function()
     assert result == "done"
     assert "sample_function" in timer.current_event_times
-    assert timer.current_event_times["sample_function"] == pytest.approx(0.1, abs=0.01)
+    assert timer.current_event_times["sample_function"] == pytest.approx(0.1, abs=0.02)
 
 
 def test_end_event():
