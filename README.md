@@ -154,3 +154,18 @@ sequenceDiagram
     deactivate ConcreteOperator
 ```
 
+# Devloper installation
+We use pixi to be forward thinking. We like it because it helps you easily test that dependencies for a variety of architects can resolve.
+
+To setup a development environment:
+
+* Git clone this repo and CD into the directory
+* Install [pixi](https://pixi.sh/v0.33.0/#installation)
+* Install dependencies with
+'''
+pix install
+'''
+* Run pytest with
+'''
+pixi r test
+'''

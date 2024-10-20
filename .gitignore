@@ -178,3 +178,5 @@ data/
 
 .vscode/
 .code-workspace
+
+.pixi/
