@@ -34,7 +34,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"  # Use a version compatible with your project
+          python-version: "3.12"  # Use a version compatible with your project
 
       # Step 3: Install Pixi
       - name: Install Pixi
