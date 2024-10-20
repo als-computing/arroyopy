@@ -155,7 +155,36 @@ sequenceDiagram
 ```
 
 # Devloper installation
-We use pixi to be forward thinking. We like it because it helps you easily test that dependencies for a variety of architects can resolve.
+
+## Conda environment
+We use pixi to be forward thinking tio help with CI. We like it because it helps you easily test that dependencies for a variety of architects can resolve.
+
+However, at the time of writing we can't figure out how to get it to be a good developer experience. So, we create a conda environment like:
+
+```
+conda create -n arroyo python=3.11
+conda activate arroyo
+pip install -e '.[dev]'
+```
+
+## pre-commit
+We use `pre-commit` in CI so you want to use it before commiting.
+To test that your branches changes are all good, type:
+
+```
+pre-commit run --all-files
+```
+
+Since our configuration of `pre-commit` uses `black`, it's possible that it will change files. If you like the changes, you can add them to your `git` commit with
+
+```
+git add .
+```
+
+Then you can run `pre-commit run --all-files` again.
+
+## pixi
+We use `pixi` for CI in github action. It's great for that but can't get our favorite developr tools to use the python environments that `pixi` creaetes in the `.pixi` folder. If you want to play with `pixi`, here are some tips:
 
 To setup a development environment:
 

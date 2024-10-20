@@ -66,9 +66,3 @@ async def test_zmq(zmq_listener, zmq_publisher, operator_mock):
     operator_mock.process.assert_any_await(
         b"message2"
     )  # Check operator run with second messag
-
-
-@pytest.mark.asyncio
-def test_from_socket(zmq_subscriber):
-    # zmq_listener = ZMQListener()
-    pass
