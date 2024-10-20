@@ -51,7 +51,7 @@ jobs:
       - name: Run tests
         run: |
           pixi run pytest
-      
+
       # Step 6: Cache dependencies for future runs for faster execution
       - name: Cache dependencies
         uses: actions/cache@v3

@@ -50,7 +50,7 @@ redis = [
     "redis"
 ]
 
-tiled = [ 
+tiled = [
     "tiled[client]"
 ]
 
@@ -72,6 +72,7 @@ python = ">=3.10, <3.13"
 
 [tool.pixi.feature.test.tasks]
 test = "pytest"
+pre-commit = "pre-commit run --all-files"
 
 
 [project.urls]

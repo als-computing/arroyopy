@@ -3,13 +3,14 @@ import pandas
 from pydantic import BaseModel, field_validator
 
 
-class Message():
-    """"
-        Base class for messages. Is not a pydantic model
-        in case implementations choose not to use pydantic 
-        as a validation and (de)serialization system but still
-        want to indicate that they pass arroyo Messages.
+class Message:
+    """ "
+    Base class for messages. Is not a pydantic model
+    in case implementations choose not to use pydantic
+    as a validation and (de)serialization system but still
+    want to indicate that they pass arroyo Messages.
     """
+
     pass
 
 

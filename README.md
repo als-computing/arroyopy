@@ -1,9 +1,9 @@
 # Arroyo Stream Processing Toolset
 
-Processing event or streaming data presents several technological challenges. A variety of technologies are often used by scientific user facilities. ZMQ is used to stream data and messages in a peer-to-peer fashion. Message brokers like Kafka, Redis and RabbitMQ are often employed to route and pass messages from instruments to processing workflows. Arroyo provides an API and structure to flexibly integrate with these tools and incorporate arbitrarily complex processing workflows, letting the hooks to the workflow code be independent of the connection code and hence reusable at a variety of instruments. 
+Processing event or streaming data presents several technological challenges. A variety of technologies are often used by scientific user facilities. ZMQ is used to stream data and messages in a peer-to-peer fashion. Message brokers like Kafka, Redis and RabbitMQ are often employed to route and pass messages from instruments to processing workflows. Arroyo provides an API and structure to flexibly integrate with these tools and incorporate arbitrarily complex processing workflows, letting the hooks to the workflow code be independent of the connection code and hence reusable at a variety of instruments.
 
 The basic structure of building an arroyo implementation is to implement groups of several  classes:
-- 
+-
 - `Operator` - receives `Messages` from a listener and can optionally send `Messages` to one or more `Publisher` instances
 - `Listener` - receives `Messages` from the external world, parse them into arroyo `Message` and sends them to an `Operator`
 - `Publisher` - receives `Messages` from a `Listener` and publishes them to the outside world
@@ -33,11 +33,11 @@ classDiagram
         class Listener{
             operator: Operator
 
-            *start(): None  
+            *start(): None
             *stop(): None
         }
 
-        
+
     }
 
     namespace operator{
@@ -58,7 +58,7 @@ classDiagram
     }
 
     namespace message{
-        
+
         class Message{
 
         }
@@ -66,7 +66,7 @@ classDiagram
         class Start{
             data: Dict
         }
-    
+
         class Stop{
             data: Dict
         }
@@ -76,7 +76,7 @@ classDiagram
             payload: bytes
         }
     }
- 
+
     namespace zmq{
         class ZMQListener{
             operator: Operator
@@ -103,7 +103,7 @@ classDiagram
 
     }
 
- 
+
 
     Listener <|-- ZMQListener
     ZMQListener <|-- ZMQPubSubListener
@@ -117,9 +117,9 @@ classDiagram
     Operator o-- Publisher
     Message <|-- Start
     Message <|-- Stop
-    Message <|-- Event 
-    
-     
+    Message <|-- Event
+
+
 ```
 ##
 In-process, listening for ZMQ
@@ -139,7 +139,7 @@ sequenceDiagram
             ZMQPubSubListener ->> MessageQueue: put(bytes)
         deactivate ZMQPubSubListener
 
-        
+
         ZMQPubSubListener ->> MessageQueue: message(Message)
     end
     activate ConcreteOperator
@@ -148,7 +148,7 @@ sequenceDiagram
         end
         loop processing thread
             ConcreteOperator ->> ConcreteOperator: calculate()
-        
+
             ConcreteOperator ->> ConcretePublisher: publish()
         end
     deactivate ConcreteOperator
@@ -165,6 +165,12 @@ To setup a development environment:
 '''
 pix install
 '''
+* run pre-commit on the files
+'''
+pixi r pre-commit
+'''
+
+
 * Run pytest with
 '''
 pixi r test

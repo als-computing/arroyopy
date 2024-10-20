@@ -7,25 +7,20 @@ import zmq.asyncio
 from .listener import Listener
 from .operator import Operator
 
-
 logger = logging.getLogger("arroyo.zmq")
 
 
 class ZMQListener(Listener):
-
     stop_signal: bool = False
 
-    def __init__(
-            self,
-            operator: Operator,
-            zmq_socket: zmq.Socket):
+    def __init__(self, operator: Operator, zmq_socket: zmq.Socket):
         self.stop_requested = False
         self.operator = operator
         self.zmq_socket = zmq_socket
 
     @classmethod
     def from_socket(cls, zmq_socket: zmq.Socket):
-        """Construct a ZMQListenr using a provided socket. Gives 
+        """Construct a ZMQListenr using a provided socket. Gives
         callers the ability to customize the ZMQ soket
 
         Parameters

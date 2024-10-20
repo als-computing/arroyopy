@@ -8,6 +8,7 @@ from arroyo.redis import RedisListener, RedisPublisher
 
 REDIS_CHANNEL_NAME = b"arroyo"
 
+
 @pytest_asyncio.fixture
 async def redis_client():
     client = await redis.FakeRedis()
@@ -20,7 +21,8 @@ async def redis_listener(operator_mock, redis_client):
     listener = RedisListener(
         redis_client=redis_client,
         redis_channel_name=REDIS_CHANNEL_NAME,
-        operator=operator_mock)
+        operator=operator_mock,
+    )
     yield listener
     await listener.stop()
 
@@ -28,8 +30,8 @@ async def redis_listener(operator_mock, redis_client):
 @pytest_asyncio.fixture
 async def redis_publisher(operator_mock, redis_client, redis_channel_name):
     listener = RedisPublisher(
-        operator=operator_mock,
-        redis_channel_name=redis_channel_name)
+        operator=operator_mock, redis_channel_name=redis_channel_name
+    )
     yield listener
     await listener.stop()
 
@@ -37,9 +39,10 @@ async def redis_publisher(operator_mock, redis_client, redis_channel_name):
 @pytest.mark.asyncio
 async def test_from_client(operator_mock, redis_client):
     listener = await RedisListener.from_client(
-                        redis_client=redis_client,
-                        redis_channel_name=REDIS_CHANNEL_NAME,
-                        operator=operator_mock)
+        redis_client=redis_client,
+        redis_channel_name=REDIS_CHANNEL_NAME,
+        operator=operator_mock,
+    )
 
     assert listener.redis_client == redis_client
     assert listener.redis_channel_name == REDIS_CHANNEL_NAME
@@ -59,5 +62,9 @@ async def test_redis(redis_listener, redis_client, operator_mock):
     listener_task = asyncio.create_task(redis_listener.start())
     await send_messages()
     await listener_task
-    operator_mock.process.assert_any_await(b"message1")  # Check operator run with first message
-    operator_mock.process.assert_any_await(b"message2")  # Check operator run with second message
+    operator_mock.process.assert_any_await(
+        b"message1"
+    )  # Check operator run with first message
+    operator_mock.process.assert_any_await(
+        b"message2"
+    )  # Check operator run with second message
