@@ -1,6 +1,9 @@
-from arroyo.timing import timer
 import time
+
 import pytest
+
+from arroyo.timing import timer
+
 
 def test_timing_decorator():
     @timer
@@ -12,6 +15,7 @@ def test_timing_decorator():
     assert result == "done"
     assert "sample_function" in timer.current_event_times
     assert timer.current_event_times["sample_function"] == pytest.approx(0.1, abs=0.01)
+
 
 def test_end_event():
     @timer
@@ -32,6 +36,7 @@ def test_end_event():
     timer.end_event()
     assert len(timer.current_event_times) == 0
 
+
 def test_reset():
     @timer
     def sample_function():
@@ -45,6 +50,7 @@ def test_reset():
     assert len(timer.current_event_times) == 0
     assert timer.current_event_times == {}
     assert timer.events == []
+
 
 if __name__ == "__main__":
     pytest.main()

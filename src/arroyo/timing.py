@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 effective_level = logger.getEffectiveLevel()
 
+
 class EventTimingDecorator:
     """
     Decorator to time functions and output the results in a pandas DataFrame.
@@ -17,7 +18,6 @@ class EventTimingDecorator:
     When all events are done the timings can be accessed as a DataFrame using the `timing_dataframe` property.
     After all events are done, call `reset` to clear all timings for the next event.
     """
-
 
     def __init__(self):
         self.current_event_times = {}
@@ -49,5 +49,6 @@ class EventTimingDecorator:
     def reset(self):
         self.current_event_times = {}
         self.events = []
+
 
 timer = EventTimingDecorator()

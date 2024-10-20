@@ -168,7 +168,7 @@ pip install -e '.[dev]'
 ```
 
 ## pre-commit
-We use `pre-commit` in CI so you want to use it before commiting. 
+We use `pre-commit` in CI so you want to use it before commiting.
 To test that your branches changes are all good, type:
 
 ```
