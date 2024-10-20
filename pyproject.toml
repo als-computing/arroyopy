@@ -6,7 +6,7 @@ authors = [
 ]
 description = "A library to simplify processing streams of data"
 readme = "README.md"
-requires-python = ">=3.11, <3.11"
+requires-python = ">=3.11, <3.12"
 
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -24,7 +24,8 @@ dependencies = [
 [tool.pixi.environments]
 default = { solve-group = "default" }
 test = { features = ["test"], solve-group = "default" }
-zmq = { features = ["zmq"], solve-group = "default" }
+dev = { features = ["dev"], solve-group = "default" }
+zmq = { features = ["zmq"], solve-group = "default"}
 redis = { features = ["redis"], solve-group = "default" }
 tiled = { features = ["tiled"], solve-group = "default" }
 
@@ -32,7 +33,7 @@ tiled = { features = ["tiled"], solve-group = "default" }
 [project.optional-dependencies]
 # These are required for developing the package (running the tests, building
 # the documentation) but not necessarily required for _using_ it.
-test = [
+dev = [
     "fakeredis",
     "flake8",
     "pre-commit",
@@ -69,6 +70,7 @@ platforms = [
 
 [tool.pixi.dependencies]
 python = ">=3.10, <3.13"
+pytest = ">=8.3.3,<9"
 
 [tool.pixi.feature.test.tasks]
 test = "pytest"
