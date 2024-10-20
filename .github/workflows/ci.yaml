@@ -45,6 +45,7 @@ jobs:
       # Step 4: Install project dependencies with Pixi
       - name: Install dependencies with Pixi
         run: |
+          pixi migrate
           pixi init
           pixi install
           pixi install --dev
