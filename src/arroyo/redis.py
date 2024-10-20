@@ -1,4 +1,3 @@
-import asyncio
 import logging
 
 from redis.asyncio.client import Redis
@@ -10,13 +9,9 @@ logger = logging.getLogger("arroyo.zmq")
 
 
 class RedisListener(Listener):
-
     def __init__(
-            self,
-            redis_client: Redis,
-            redis_channel_name: str,
-            operator: Operator):
-
+        self, redis_client: Redis, redis_channel_name: str, operator: Operator
+    ):
         self.stop_requested = False
         self.redis_client: Redis = redis_client
         self.redis_channel_name = redis_channel_name
@@ -24,10 +19,8 @@ class RedisListener(Listener):
 
     @classmethod
     async def from_client(
-            cls,
-            redis_client: Redis,
-            redis_channel_name: str,
-            operator: Operator):
+        cls, redis_client: Redis, redis_channel_name: str, operator: Operator
+    ):
         return RedisListener(redis_client, redis_channel_name, operator)
 
     async def start(self):
@@ -39,10 +32,12 @@ class RedisListener(Listener):
             if self.stop_requested:
                 return
             # get_message blocks until timeout, returning None if no message in that time
-            raw_msg = await pubsub.get_message(ignore_subscribe_messages=True, timeout=1.0)
+            raw_msg = await pubsub.get_message(
+                ignore_subscribe_messages=True, timeout=1.0
+            )
             if raw_msg is None:
                 continue
-            msg = raw_msg['data']
+            msg = raw_msg["data"]
             if logger.getEffectiveLevel() == logging.DEBUG:
                 logger.debug(f"{msg=}")
             await self.operator.process(msg)
@@ -53,20 +48,12 @@ class RedisListener(Listener):
 
 
 class RedisPublisher:
-
-    def __init__(
-            self,
-            redis_client: Redis,
-            redis_channel_name: str):
-
+    def __init__(self, redis_client: Redis, redis_channel_name: str):
         self.redis_client: Redis = redis_client
         self.redis_channel_name = redis_channel_name
 
     @classmethod
-    async def from_client(
-            cls,
-            redis_client: Redis,
-            redis_channel_name: str):
+    async def from_client(cls, redis_client: Redis, redis_channel_name: str):
         return RedisPublisher(redis_client, redis_channel_name)
 
     async def publish(self, message):

@@ -1,0 +1,12 @@
+# recommended dependabot configuration for github actions
+# recommandation from the pixi site https://pixi.sh/latest/advanced/github_actions/#usage
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      dependencies:
+        patterns:
+          - "*"

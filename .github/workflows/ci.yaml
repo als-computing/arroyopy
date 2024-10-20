@@ -1,0 +1,54 @@
+name: Run Tests with Pixi
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  pre-commit:
+      name: Static Code Checks
+      runs-on: ubuntu-latest
+      steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+          cache: 'pip'
+      - uses: pre-commit/action@v3.0.0
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest] # windows and pyzm are  painful, windows-latest]
+        python-version: ["py310", "py311", "py312"]
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Install Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"  # Use a version compatible with your project
+
+      # Step 3: Install dependencies
+      - name: Run tests with pixi
+        uses: prefix-dev/setup-pixi@v0.7.0
+        with:
+          pixi-version: v0.33.0
+          cache: true
+      - run: pixi run test
+
+      # Step 6: Cache dependencies for future runs for faster execution
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-

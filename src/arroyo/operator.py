@@ -14,10 +14,10 @@ class Operator(ABC):
     async def process(self, message: Message) -> None:
         pass
 
-    def add_listener(self, listener: Listener) -> None: # noqa
+    def add_listener(self, listener: Listener) -> None:  # noqa
         self.listeners.append(listener)
 
-    def remove_listener(self, listener: Listener) -> None: # noqa
+    def remove_listener(self, listener: Listener) -> None:  # noqa
         self.listeners.remove(listener)
 
     def add_publisher(self, publisher: Publisher) -> None:
