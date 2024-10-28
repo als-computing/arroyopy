@@ -1,4 +1,7 @@
+from typing import Tuple
+
 import numpy
+import numpy.typing
 import pandas
 from pydantic import BaseModel, field_validator
 
@@ -29,6 +32,10 @@ class Stop(PydanticMessage):
 class Event(PydanticMessage):
     pass
 
+
+class ArrayMessage(Event):
+    index: Tuple # index where this array should go
+    array: numpy.typing.NDArray
 
 class DataFrameModel(BaseModel):
     """

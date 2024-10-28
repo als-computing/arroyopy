@@ -159,7 +159,7 @@ sequenceDiagram
 ## Conda environment
 We use pixi to be forward thinking tio help with CI. We like it because it helps you easily test that dependencies for a variety of architects can resolve.
 
-However, at the time of writing we can't figure out how to get it to be a good developer experience. So, we create a conda environment like:
+However, at the time of writing we can't figure out how to get it to be a good developer experience. So, we create a conda environment like (note that at this time, we are using python 3.11 because of numpy and wheel availability):
 
 ```
 conda create -n arroyo python=3.11
