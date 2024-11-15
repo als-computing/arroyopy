@@ -14,7 +14,6 @@ classifiers = [
 ]
 
 dependencies = [
-    "arroyo@file:///../arroyo",
     "python-dotenv",
     "pandas",
     "numpy",
@@ -84,3 +83,6 @@ Issues = "https://github.com/als-computing/als_arroyo/issues"
 
 [tool.isort]
 profile = "black"
+
+[tool.hatch.metadata]
+allow-direct-references = true
