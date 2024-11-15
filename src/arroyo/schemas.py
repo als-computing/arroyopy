@@ -33,10 +33,6 @@ class Event(PydanticMessage):
     pass
 
 
-class ArrayMessage(Event):
-    index: Tuple # index where this array should go
-    array: numpy.typing.NDArray
-
 class DataFrameModel(BaseModel):
     """
     A Pydantic model for validating pd.DataFrame objects.
