@@ -1,12 +1,12 @@
 [project]
-name = "arroyo"
-version = "0.0.a1"
+name = "arroyopy"
+version = "0.1.0"
 authors = [
     { name="Dylan McReynolds", email="dmcreynolds@lbl.gov"},
 ]
 description = "A library to simplify processing streams of data"
 readme = "README.md"
-requires-python = ">=3.11, <3.12"
+requires-python = ">=3.11, <3.13"
 
 classifiers = [
     "Programming Language :: Python :: 3",
