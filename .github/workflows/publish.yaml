@@ -1,9 +1,9 @@
 name: Publish to PyPI
 
 on:
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
   release:
     types:
       - created
@@ -32,11 +32,11 @@ jobs:
           name: python-package
           path: dist/
 
-  publish:
+publish:
     needs: build
     runs-on: ubuntu-latest
     permissions:
-      id-token: write  # Required for trusted publishing
+      id-token: write  # ✅ Required for Trusted Publishing (no API key needed)
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -45,6 +45,4 @@ jobs:
           path: dist/
 
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
+        uses: pypa/gh-action-pypi-publish@release/v1  # ✅ No password needed for Trusted Publishing
