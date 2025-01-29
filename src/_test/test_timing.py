@@ -2,7 +2,7 @@ import time
 
 import pytest
 
-from arroyo.timing import timer
+from arroyopy.timing import timer
 
 
 def test_timing_decorator():

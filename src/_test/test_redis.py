@@ -4,7 +4,7 @@ import fakeredis.aioredis as redis
 import pytest
 import pytest_asyncio
 
-from arroyo.redis import RedisListener, RedisPublisher
+from arroyopy.redis import RedisListener, RedisPublisher
 
 REDIS_CHANNEL_NAME = b"arroyo"
 

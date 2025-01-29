@@ -1,6 +1,6 @@
-from arroyo.operator import Operator
-from arroyo.publisher import Publisher
-from arroyo.schemas import Message
+from arroyopy.operator import Operator
+from arroyopy.publisher import Publisher
+from arroyopy.schemas import Message
 
 
 class MockOperator(Operator):
