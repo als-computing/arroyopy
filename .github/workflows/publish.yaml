@@ -32,7 +32,7 @@ jobs:
           name: python-package
           path: dist/
 
-publish:
+  publish:
     needs: build
     runs-on: ubuntu-latest
     permissions:
