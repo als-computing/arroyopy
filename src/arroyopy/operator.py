@@ -1,6 +1,6 @@
-from abc import ABC, abstractmethod
 import asyncio
 import logging
+from abc import ABC, abstractmethod
 from typing import List
 
 from .listener import Listener
@@ -8,6 +8,7 @@ from .publisher import Publisher
 from .schemas import Message
 
 logger = logging.getLogger(__name__)
+
 
 class Operator(ABC):
     listeners: List[Listener] = []
@@ -24,7 +25,7 @@ class Operator(ABC):
     async def add_listener(self, listener: Listener) -> None:  # noqa
         self.listeners.append(listener)
         await listener.start(self.listener_queue)
-    
+
     def remove_listener(self, listener: Listener) -> None:  # noqa
         self.listeners.remove(listener)
 

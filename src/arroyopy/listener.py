@@ -1,6 +1,5 @@
 import asyncio
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
 
 
 class Listener(ABC):

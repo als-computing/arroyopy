@@ -1,5 +1,3 @@
-from typing import Tuple
-
 import numpy
 import numpy.typing
 import pandas
