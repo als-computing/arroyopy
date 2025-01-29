@@ -5,7 +5,7 @@ import pytest_asyncio
 import zmq
 import zmq.asyncio
 
-from arroyo.zmq import ZMQListener
+from arroyopy.zmq import ZMQListener
 
 
 # Fixture to launch a ZMQ publisher that waits for test input to publish messages
