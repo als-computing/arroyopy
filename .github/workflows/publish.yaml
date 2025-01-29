@@ -36,7 +36,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     permissions:
-      id-token: write  # ✅ Required for Trusted Publishing (no API key needed)
+      id-token: write  
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -45,4 +45,4 @@ jobs:
           path: dist/
 
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1  # ✅ No password needed for Trusted Publishing
+        uses: pypa/gh-action-pypi-publish@release/v1
