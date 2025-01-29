@@ -24,8 +24,8 @@ class Operator(ABC):
 
     async def add_listener(self, listener: Listener) -> None:  # noqa
         self.listeners.append(listener)
-        await listener.start()
-    
+        await listener.start(self.listener_queue)
+
     def remove_listener(self, listener: Listener) -> None:  # noqa
         self.listeners.remove(listener)
 
