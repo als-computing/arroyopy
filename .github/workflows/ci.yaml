@@ -20,7 +20,6 @@ jobs:
           cache: 'pip'
       - uses: pre-commit/action@v3.0.0
   test:
-    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python 3.9
