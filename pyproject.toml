@@ -22,16 +22,6 @@ dependencies = [
     "typer"
 ]
 
-[tool.pixi.environments]
-default = { solve-group = "default" }
-test = { features = ["dev"], solve-group = "default" }
-zmq = { features = ["zmq"], solve-group = "default"}
-redis = { features = ["redis"], solve-group = "default" }
-tiled = { features = ["tiled"], solve-group = "default" }
-
-[tool.pixi.feature.dev.tasks]
-test = "pytest"
-pre-commit = "pre-commit run --all-files"
 
 
 [project.optional-dependencies]
@@ -73,7 +63,7 @@ platforms = [
     "win-64"]
 
 [tool.pixi.dependencies]
-python = ">=3.10, <3.13"
+python = ">=3.11, <3.13"
 pytest = ">=8.3.3,<9"
 
 
@@ -87,3 +77,6 @@ profile = "black"
 
 [tool.hatch.metadata]
 allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/arroyopy"]
