@@ -35,7 +35,8 @@ dev = [
     "redis",
     "pytest-asyncio",
     "pytest-mock",
-    "tiled[minimal-server]"]
+    "tiled[minimal-server]",
+    "typer"]
 
 zmq = [
     "pyzmq"
@@ -48,6 +49,15 @@ redis = [
 tiled = [
     "tiled[client]"
 ]
+
+file-watch = [
+    "watchfiles >= 0.21.0"
+]
+
+
+[project.scripts]
+watcher = "arroyopy.app.redis_file_watcher:app"
+
 
 [build-system]
 build-backend = "hatchling.build"
