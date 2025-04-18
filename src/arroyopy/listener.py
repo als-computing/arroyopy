@@ -1,13 +1,17 @@
-import asyncio
 from abc import ABC, abstractmethod
+from typing import Generic, TypeVar
+
+T = TypeVar("T")
 
 
-class Listener(ABC):
-    message_queue: asyncio.Queue
+class Listener(ABC, Generic[T]):
+    def __init__(self, operator: T):
+        super().__init__()
+        self.operator = operator
 
     @abstractmethod
-    async def start(self, message_queue) -> None:
-        self.message_queue = message_queue
+    async def start(self) -> None:
+        pass
 
     @abstractmethod
     async def stop(self) -> None:
