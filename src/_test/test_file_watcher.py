@@ -55,5 +55,8 @@ async def test_filewatcher_detects_file_in_subdirectory(tmp_path: Path):
         pass
 
     # Validate publisher received the notification
-    assert len(publisher.messages) == 1
-    assert Path(publisher.messages[0].file_path) == gb_file
+    assert len(publisher.messages) == 2
+    assert Path(publisher.messages[0].file_path) == subdir
+    assert publisher.messages[0].is_directory is True
+    assert Path(publisher.messages[1].file_path) == gb_file
+    assert publisher.messages[1].is_directory is False
