@@ -1,0 +1,38 @@
+# Example arroyo unit configuration - Simple ZMQ Pipeline
+#
+# This is a template configuration. For a complete, runnable demo, see:
+# examples/simple_demo/README.md
+#
+# This configuration defines a single unit that:
+# - Listens for messages on a ZMQ socket
+# - Processes them with a custom operator
+# - Publishes results to another ZMQ socket
+#
+# To make this work, you need to:
+# 1. Create your operator class (see examples/simple_demo/operator.py)
+# 2. Set up a data source (see examples/simple_demo/source.py)
+# 3. Set up a sink to view output (see examples/simple_demo/sink.py)
+
+name: zmq_simple_pipeline
+description: Simple ZMQ message processing pipeline
+
+operator:
+  # Replace this with your operator class
+  # Example: examples.simple_demo.operator.SimpleOperator
+  class: myapp.operators.MessageProcessor
+  kwargs:
+    timeout: 30
+    batch_size: 100
+
+listeners:
+  - class: arroyopy.zmq.ZMQListener
+    kwargs:
+      # operator is automatically injected
+      address: 'tcp://127.0.0.1:5555'
+      socket_type: 'SUB'
+
+publishers:
+  - class: arroyopy.zmq.ZMQPublisher
+    kwargs:
+      address: 'tcp://127.0.0.1:5556'
+      socket_type: 'PUB'

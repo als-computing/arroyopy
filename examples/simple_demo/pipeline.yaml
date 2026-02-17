@@ -1,0 +1,31 @@
+# Simple Arroyopy Pipeline Demo
+#
+# This configuration defines a complete, runnable pipeline that:
+# - Listens for messages on ZMQ port 5555
+# - Processes them with a simple operator
+# - Publishes results to ZMQ port 5556
+#
+# To run this demo:
+# 1. In terminal 1: python source.py          (publishes test data)
+# 2. In terminal 2: arroyo-run pipeline.yaml  (runs the pipeline)
+# 3. In terminal 3: python sink.py            (displays output)
+
+name: simple_demo
+description: Simple demonstration pipeline with ZMQ
+
+operator:
+  class: simple_operator.SimpleOperator
+  kwargs:
+    prefix: "PROCESSED"
+
+listeners:
+  - class: zmq_components.SimpleZMQListener
+    kwargs:
+      address: 'tcp://127.0.0.1:5555'
+      socket_type: 'SUB'
+
+publishers:
+  - class: zmq_components.SimpleZMQPublisher
+    kwargs:
+      address: 'tcp://127.0.0.1:5556'
+      socket_type: 'PUB'
