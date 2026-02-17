@@ -24,9 +24,6 @@ jobs:
         pixi-version: latest
         environments: dev
 
-    - name: Install package
-      run: pixi run -e dev install-dev
-
     - name: Lint with flake8
       run: pixi run -e dev lint
 

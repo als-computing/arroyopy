@@ -53,10 +53,10 @@ mkdocstrings-python = "*"
 test-watch = "pytest-watch src/_test/"
 
 [environments]
-# Default environment with all dev tools (for local development)
-default = { features = ["dev", "zmq", "redis", "file-watch"], solve-group = "default" }
+# Default environment with optional features (for normal usage)
+default = { features = ["zmq", "redis", "file-watch"], solve-group = "default" }
 
-# Development environment (alias for default)
+# Development environment with all dev tools
 dev = { features = ["dev", "zmq", "redis", "file-watch"], solve-group = "default" }
 
 # Production-like environment with optional features

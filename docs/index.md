@@ -15,5 +15,5 @@ Welcome to the arroyopy documentation!
 ## Development
 
 - [Contributing](../README.md#developer-installation) - How to set up your development environment
-- Install with pixi: `pixi install && pixi run install-dev`
-- Run tests: `pixi run test`
+- Install dev environment: `pixi install -e dev`
+- Run tests: `pixi run -e dev test`

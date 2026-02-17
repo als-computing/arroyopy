@@ -213,39 +213,39 @@ brew install pixi
 git clone https://github.com/als-computing/arroyopy.git
 cd arroyopy
 
-# Install all dependencies (automatically creates environment)
-pixi install
+# Install development environment (includes testing/linting tools)
+pixi install -e dev
 
-# Install in editable mode
-pixi run install-dev
+# Activate the environment
+pixi shell -e dev
 ```
 
 ### Common Pixi Tasks
 
 ```bash
 # Run tests
-pixi run test
+pixi run -e dev test
 
 # Run tests with coverage
-pixi run test-cov
+pixi run -e dev test-cov
 
 # Format code
-pixi run format
+pixi run -e dev format
 
 # Check formatting
-pixi run format-check
+pixi run -e dev format-check
 
 # Run linter
-pixi run lint
+pixi run -e dev lint
 
 # Run pre-commit checks
-pixi run pre-commit
+pixi run -e dev pre-commit
 
 # Install pre-commit hooks
-pixi run pre-commit-install
+pixi run -e dev pre-commit-install
 
 # Clean build artifacts
-pixi run clean
+pixi run -e dev clean
 ```
 
 ### Using Different Environments

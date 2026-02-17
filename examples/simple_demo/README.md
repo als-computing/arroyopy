@@ -21,7 +21,7 @@ This demo requires arroyopy to be installed in your Python environment.
 
 ### Option 1: Using Pixi (Recommended)
 
-If you're developing arroyopy itself:
+**For trying out the demo:**
 
 ```bash
 # Install pixi if you haven't already
@@ -30,6 +30,14 @@ curl -fsSL https://pixi.sh/install.sh | bash
 # From the arroyopy root directory
 pixi install
 pixi shell
+```
+
+**For developing arroyopy:**
+
+```bash
+# Install with dev tools (testing, linting, etc.)
+pixi install -e dev
+pixi shell -e dev
 ```
 
 This creates a complete Python environment with all dependencies installed.
