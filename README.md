@@ -2,20 +2,54 @@
 
 Processing event or streaming data presents several technological challenges. A variety of technologies are often used by scientific user facilities. ZMQ is used to stream data and messages in a peer-to-peer fashion. Message brokers like Kafka, Redis and RabbitMQ are often employed to route and pass messages from instruments to processing workflows. Arroyo provides an API and structure to flexibly integrate with these tools and incorporate arbitrarily complex processing workflows, letting the hooks to the workflow code be independent of the connection code and hence reusable at a variety of instruments.
 
-The basic structure of building an arroyo implementation is to implement groups of several  classes:
--
+## Core Concepts
+
+The basic structure of building an arroyo implementation is to implement groups of several classes:
+
 - `Operator` - receives `Messages` from a listener and can optionally send `Messages` to one or more `Publisher` instances
 - `Listener` - receives `Messages` from the external world, parse them into arroyo `Message` and sends them to an `Operator`
 - `Publisher` - receives `Messages` from a `Listener` and publishes them to the outside world
+- `Unit` - a container that holds one operator with any number of listeners and publishers
 
+## Configuration-Based Deployment
 
+Arroyo supports declarative configuration via YAML files, making it easy to deploy and configure pipelines without writing code:
 
+```yaml
+name: my_pipeline
+description: Process messages from ZMQ
 
-Arroyo is un-opinionated about deployment decsions. It is intended support listener-operator-publisher groups in:
+operator:
+  class: myapp.operators.MessageProcessor
+  kwargs:
+    timeout: 30
+
+listeners:
+  - class: arroyopy.zmq.ZMQListener
+    kwargs:
+      address: 'tcp://127.0.0.1:5555'
+
+publishers:
+  - class: arroyopy.redis.RedisPublisher
+    kwargs:
+      channel: processed_data
+```
+
+Run from the command line:
+```bash
+arroyo-run config/pipeline.yaml
+```
+
+See [docs/configuration.md](docs/configuration.md) for full details.
+
+## Deployment Options
+
+Arroyo is un-opinionated about deployment decisions. It is intended to support listener-operator-publisher groups in:
 - Single process
-- Chain of processes where listening, processing and publishing can linked together through a protocol like ZMQ. One process's publisher can communicate with another process's listener, etc.
+- Chain of processes where listening, processing and publishing can be linked together through a protocol like ZMQ. One process's publisher can communicate with another process's listener, etc.
+- Configuration-based deployment via YAML files and CLI
 
-This library is intended to provide  classes, and will also include more specific common subclasses, like those that communicate over ZMQ or Redis.
+This library is intended to provide base classes, and will also include more specific common subclasses, like those that communicate over ZMQ or Redis.
 
 
 
@@ -154,37 +188,177 @@ sequenceDiagram
     deactivate ConcreteOperator
 ```
 
-# Devloper installation
+# Developer Installation
 
-## Conda environment
-We use pixi to be forward thinking tio help with CI. We like it because it helps you easily test that dependencies for a variety of architects can resolve.
+Arroyopy supports multiple development setups. Choose the one that fits your workflow:
 
-However, at the time of writing we can't figure out how to get it to be a good developer experience. So, we create a conda environment like (note that at this time, we are using python 3.11 because of numpy and wheel availability):
+## Option 1: Pixi (Recommended)
 
+[Pixi](https://pixi.sh) provides reproducible environments across all platforms with automatic dependency resolution.
+
+### Install Pixi
+
+```bash
+# macOS/Linux
+curl -fsSL https://pixi.sh/install.sh | bash
+
+# Or with homebrew
+brew install pixi
 ```
-conda create -n arroyo python=3.11
-conda activate arroyo
+
+### Setup Development Environment
+
+```bash
+# Clone and navigate to the repository
+git clone https://github.com/als-computing/arroyopy.git
+cd arroyopy
+
+# Install all dependencies (automatically creates environment)
+pixi install
+
+# Install in editable mode
+pixi run install-dev
+```
+
+### Common Pixi Tasks
+
+```bash
+# Run tests
+pixi run test
+
+# Run tests with coverage
+pixi run test-cov
+
+# Format code
+pixi run format
+
+# Check formatting
+pixi run format-check
+
+# Run linter
+pixi run lint
+
+# Run pre-commit checks
+pixi run pre-commit
+
+# Install pre-commit hooks
+pixi run pre-commit-install
+
+# Clean build artifacts
+pixi run clean
+```
+
+### Using Different Environments
+
+```bash
+# Use dev environment (includes all optional dependencies)
+pixi shell -e dev
+
+# Use minimal environment (only core dependencies)
+pixi shell -e minimal
+
+# Use production environment (core + optional features)
+pixi shell -e prod
+
+# Run tests in dev environment
+pixi run -e dev test
+```
+
+## Option 2: Conda/Mamba Environment
+
+If you prefer conda/mamba without pixi:
+
+```bash
+# Create environment
+conda create -n arroyopy python=3.11
+conda activate arroyopy
+
+# Install in editable mode with dev dependencies
 pip install -e '.[dev]'
 ```
 
-## pre-commit
-We use `pre-commit` in CI so you want to use it before commiting.
-To test that your branches changes are all good, type:
+## Option 3: Virtual Environment (venv)
 
-```
-pre-commit run --all-files
+For a pure Python approach:
+
+```bash
+# Create virtual environment
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install in editable mode with dev dependencies
+pip install -e '.[dev]'
 ```
 
-Since our configuration of `pre-commit` uses `black`, it's possible that it will change files. If you like the changes, you can add them to your `git` commit with
+## Installation Options
 
+### Basic Installation
+
+```bash
+pip install arroyopy
 ```
+
+### With optional dependencies
+
+```bash
+# Install with ZMQ support
+pip install arroyopy[zmq]
+
+# Install with Redis support
+pip install arroyopy[redis]
+
+# Install with file watching support
+pip install arroyopy[file-watch]
+
+# Install with multiple options
+pip install arroyopy[zmq,redis]
+
+# Install everything for development
+pip install arroyopy[dev]
+```
+
+## Pre-commit Hooks
+## Pre-commit Hooks
+
+We use `pre-commit` for code quality checks. It's included in the dev dependencies.
+
+### Setup (Pixi)
+
+```bash
+If pre-commit makes changes (e.g., with `black`), review them and add to your commit:
+
+```bash
 git add .
+# Then run pre-commit again
+pixi run pre-commit  # or: pre-commit run --all-files
 ```
 
-Then you can run `pre-commit run --all-files` again.
+## Running Tests
 
-## pixi
-We use `pixi` for CI in github action. It's great for that but can't get our favorite developr tools to use the python environments that `pixi` creaetes in the `.pixi` folder. If you want to play with `pixi`, here are some tips:
+### With Pixi
+
+```bash
+# Run all tests
+pixi run test
+
+# Verbose output
+pixi run test-verbose
+
+# With coverage report
+pixi run test-cov
+```
+
+### With pip/conda
+
+```bash
+# Run all tests
+pytest src/_test/
+
+# With coverage
+pytest src/_test/ --cov=src/arroyopy --cov-report=html
+```
+
+## Project Structureuse `pixi` for CI in github action. It's great for that but can't get our favorite developr tools to use the python environments that `pixi` creaetes in the `.pixi` folder. If you want to play with `pixi`, here are some tips:
 
 To setup a development environment:
 
