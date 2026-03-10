@@ -46,7 +46,7 @@ sleep 1
 
 # Start the pipeline in background
 echo "Starting pipeline..."
-arroyo-run run pipeline.yaml > /tmp/arroyopy_pipeline.log 2>&1 &
+arroyo run pipeline.yaml > /tmp/arroyopy_pipeline.log 2>&1 &
 PIPELINE_PID=$!
 sleep 2
 

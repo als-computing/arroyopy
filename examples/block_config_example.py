@@ -37,7 +37,7 @@ async def run_specific_unit():
     logger.info("Loading specific block from multi-unit config...")
 
     block = load_block_from_yaml(
-        "examples/config/multi_unit.yaml", block_name="data_ingestion"
+        "examples/config/multi_block.yaml", block_name="data_ingestion"
     )
 
     logger.info(f"Loaded unit: {block.name}")
@@ -49,7 +49,7 @@ async def run_all_units():
     """Load all blocks from a config file."""
     logger.info("Loading all blocks...")
 
-    blocks = load_blocks_from_yaml("examples/config/multi_unit.yaml")
+    blocks = load_blocks_from_yaml("examples/config/multi_block.yaml")
 
     for block in blocks:
         logger.info(f"Found unit: {block.name}")
@@ -99,13 +99,13 @@ def main():
 
     print("\n=== CLI Usage ===\n")
     print("To run a block from the command line:")
-    print("  arroyo-run examples/config/simple_pipeline.yaml")
+    print("  arroyo run examples/config/simple_pipeline.yaml")
     print("\nTo validate a configuration:")
-    print("  arroyo-run validate examples/config/simple_pipeline.yaml")
+    print("  arroyo validate examples/config/simple_pipeline.yaml")
     print("\nTo list blocks in a config file:")
-    print("  arroyo-run list-blocks examples/config/multi_unit.yaml")
+    print("  arroyo list-blocks examples/config/multi_block.yaml")
     print("\nTo run a specific unit:")
-    print("  arroyo-run examples/config/multi_unit.yaml --block data_ingestion")
+    print("  arroyo run examples/config/multi_block.yaml --block data_ingestion")
     print()
 
 

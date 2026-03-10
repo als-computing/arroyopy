@@ -13,26 +13,27 @@
 # 2. Set up a data source (see examples/simple_demo/source.py)
 # 3. Set up a sink to view output (see examples/simple_demo/sink.py)
 
-name: zmq_simple_pipeline
-description: Simple ZMQ message processing pipeline
+blocks:
+  - name: zmq_simple_pipeline
+    description: Simple ZMQ message processing pipeline
 
-operator:
-  # Replace this with your operator class
-  # Example: examples.simple_demo.operator.SimpleOperator
-  class: myapp.operators.MessageProcessor
-  kwargs:
-    timeout: 30
-    batch_size: 100
+    operator:
+      # Replace this with your operator class
+      # Example: examples.simple_demo.operator.SimpleOperator
+      class: myapp.operators.MessageProcessor
+      kwargs:
+        timeout: 30
+        batch_size: 100
 
-listeners:
-  - class: arroyopy.zmq.ZMQListener
-    kwargs:
-      # operator is automatically injected
-      address: 'tcp://127.0.0.1:5555'
-      socket_type: 'SUB'
+    listeners:
+      - class: arroyopy.zmq.ZMQListener
+        kwargs:
+          # operator is automatically injected
+          address: 'tcp://127.0.0.1:5555'
+          socket_type: 'SUB'
 
-publishers:
-  - class: arroyopy.zmq.ZMQPublisher
-    kwargs:
-      address: 'tcp://127.0.0.1:5556'
-      socket_type: 'PUB'
+    publishers:
+      - class: arroyopy.zmq.ZMQPublisher
+        kwargs:
+          address: 'tcp://127.0.0.1:5556'
+          socket_type: 'PUB'

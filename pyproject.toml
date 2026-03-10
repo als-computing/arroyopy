@@ -58,7 +58,7 @@ file-watch = [
 
 
 [project.scripts]
-arroyo-run = "arroyopy.cli:app"
+arroyo = "arroyopy.cli:app"
 
 
 [build-system]

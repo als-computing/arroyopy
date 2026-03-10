@@ -139,13 +139,13 @@ def run(
     Examples:
 
         # Run a single block from config
-        arroyo-run pipeline.yaml
+        arroyo run pipeline.yaml
 
         # Run a specific block from multi-unit config
-        arroyo-run config.yaml --block data_processor
+        arroyo run config.yaml --block data_processor
 
         # Run with verbose logging
-        arroyo-run pipeline.yaml --verbose
+        arroyo run pipeline.yaml --verbose
     """
     setup_logging(verbose)
     logger = logging.getLogger(__name__)
@@ -203,7 +203,7 @@ def validate(
 
     Example:
 
-        arroyo-run validate pipeline.yaml
+        arroyo validate pipeline.yaml
     """
     setup_logging(verbose)
     logger = logging.getLogger(__name__)
@@ -242,7 +242,7 @@ def list_blocks(
 
     Example:
 
-        arroyo-run list-blocks pipeline.yaml
+        arroyo list-blocks pipeline.yaml
     """
     logger = logging.getLogger(__name__)
 

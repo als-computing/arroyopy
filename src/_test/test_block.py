@@ -1,6 +1,7 @@
 """
 Block tests for the Block class and configuration system.
 """
+
 import tempfile
 from pathlib import Path
 from unittest.mock import AsyncMock, Mock
@@ -226,9 +227,10 @@ def test_load_unit_missing_operator():
 def test_load_single_unit_from_yaml():
     """Test loading a single block from YAML file."""
     yaml_content = """
-name: test_unit
-operator:
-  class: _test.test_block.ConcreteOperator
+blocks:
+  - name: test_unit
+    operator:
+      class: _test.test_block.ConcreteOperator
 """
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
@@ -384,7 +386,7 @@ def test_load_unit_publisher_error():
 
 
 def test_load_units_invalid_structure():
-    """Test loading YAML with invalid structure."""
+    """Test loading YAML with invalid structure (missing blocks key)."""
     yaml_content = """
 invalid_key: some_value
 another_key: another_value
@@ -395,9 +397,26 @@ another_key: another_value
         yaml_path = f.name
 
     try:
-        with pytest.raises(
-            ConfigurationError, match="must contain either a 'blocks' list"
-        ):
+        with pytest.raises(ConfigurationError, match="must contain a 'blocks' key"):
+            load_blocks_from_yaml(yaml_path)
+    finally:
+        Path(yaml_path).unlink()
+
+
+def test_load_units_rejects_old_top_level_format():
+    """Test that old top-level block format (without 'blocks' key) is rejected."""
+    yaml_content = """
+name: test_unit
+operator:
+  class: _test.test_block.ConcreteOperator
+"""
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        f.write(yaml_content)
+        yaml_path = f.name
+
+    try:
+        with pytest.raises(ConfigurationError, match="must contain a 'blocks' key"):
             load_blocks_from_yaml(yaml_path)
     finally:
         Path(yaml_path).unlink()
@@ -467,9 +486,10 @@ blocks:
 def test_load_block_from_yaml_not_found():
     """Test loading a block by name that doesn't exist."""
     yaml_content = """
-name: block1
-operator:
-  class: _test.test_block.ConcreteOperator
+blocks:
+  - name: block1
+    operator:
+      class: _test.test_block.ConcreteOperator
 """
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:

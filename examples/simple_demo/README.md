@@ -51,14 +51,14 @@ If you're just trying out arroyopy:
 pip install -e .
 ```
 
-This installs arroyopy in editable mode, making the `arroyo-run` command available.
+This installs arroyopy in editable mode, making the `arroyo` command available.
 
 ### Verify Installation
 
 Check that arroyopy is installed:
 
 ```bash
-arroyo-run --help
+arroyo --help
 ```
 
 You should see the available commands: `run`, `validate`, and `list-blocks`.
@@ -80,7 +80,7 @@ This will wait for messages and print them as they arrive.
 
 ```bash
 cd examples/simple_demo
-arroyo-run run pipeline.yaml
+arroyo run pipeline.yaml
 ```
 
 The pipeline is now listening for incoming messages and ready to process them.
@@ -97,7 +97,7 @@ This will send 10 test messages. Watch the output appear in Terminal 1!
 ## What's Happening?
 
 1. **source.py** generates messages like "Message 1", "Message 2", etc.
-2. The **pipeline** (running via `arroyo-run run`) receives each message
+2. The **pipeline** (running via `arroyo run`) receives each message
 3. The **SimpleOperator** processes it, adding "PROCESSED #N: " prefix
 4. The processed message is published to the output ZMQ socket
 5. **sink.py** receives and displays: "PROCESSED #1: Message 1"

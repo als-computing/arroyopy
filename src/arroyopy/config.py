@@ -190,8 +190,7 @@ def load_blocks_from_yaml(yaml_path: str) -> List[Block]:
     """
     Load one or more blocks from a YAML file.
 
-    The YAML file can contain either a single block configuration or
-    a list of block configurations under a 'blocks' key.
+    The YAML file must contain a 'blocks' key with a list of block configurations.
 
     Parameters
     ----------
@@ -230,19 +229,15 @@ def load_blocks_from_yaml(yaml_path: str) -> List[Block]:
     if data is None:
         raise ConfigurationError("Configuration file is empty")
 
-    # Check if we have a single block or multiple blocks
-    if "blocks" in data:
-        # Multiple blocks
-        block_configs = data["blocks"]
-        if not isinstance(block_configs, list):
-            raise ConfigurationError("'blocks' must be a list")
-    elif "name" in data and "operator" in data:
-        # Single unit
-        block_configs = [data]
-    else:
+    # Require 'blocks' key
+    if "blocks" not in data:
         raise ConfigurationError(
-            "Configuration must contain either a 'blocks' list or a single block definition"
+            "Configuration must contain a 'blocks' key with a list of block definitions"
         )
+
+    block_configs = data["blocks"]
+    if not isinstance(block_configs, list):
+        raise ConfigurationError("'blocks' must be a list")
 
     blocks = []
     for i, block_config in enumerate(block_configs):

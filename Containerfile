@@ -52,7 +52,7 @@ RUN useradd -m -u 1000 arroyo && \
 USER arroyo
 
 # Default command runs the CLI
-ENTRYPOINT ["arroyo-run"]
+ENTRYPOINT ["arroyo", "run"]
 CMD ["--help"]
 
 # Labels

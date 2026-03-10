@@ -12,11 +12,11 @@ A basic configuration showing a single unit with:
 
 **Usage:**
 ```bash
-arroyo-run simple_pipeline.yaml
+arroyo run simple_pipeline.yaml
 ```
 
-### multi_unit.yaml
-Demonstrates multiple units in a single configuration file:
+### multi_block.yaml
+Demonstrates multiple blocks in a single configuration file:
 - `data_ingestion`: Reads from ZMQ, writes to Redis
 - `data_processing`: Reads from Redis, writes to ZMQ
 - `monitoring`: Monitors the pipeline
@@ -24,10 +24,10 @@ Demonstrates multiple units in a single configuration file:
 **Usage:**
 ```bash
 # Run all blocks
-arroyo-run multi_block.yaml
+arroyo multi_block.yaml
 
 # Run specific block
-arroyo-run multi_block.yaml --block data_ingestion
+arroyo multi_block.yaml --block data_ingestion
 ```
 
 ### file_watcher.yaml
@@ -37,7 +37,7 @@ Shows file system watching integration:
 
 **Usage:**
 ```bash
-arroyo-run file_watcher.yaml
+arroyo run file_watcher.yaml
 ```
 
 ### dev_pipeline.yaml
@@ -47,7 +47,7 @@ Simple development/testing configuration with:
 
 **Usage:**
 ```bash
-arroyo-run dev_pipeline.yaml
+arroyo run dev_pipeline.yaml
 ```
 
 ## Configuration Structure
@@ -108,12 +108,12 @@ publishers:
 
 5. **Validate:**
    ```bash
-   arroyo-run validate my_pipeline.yaml
+   arroyo validate my_pipeline.yaml
    ```
 
 6. **Run:**
    ```bash
-   arroyo-run my_pipeline.yaml
+   arroyo run my_pipeline.yaml
    ```
 
 ## Available Components
@@ -133,7 +133,7 @@ See [../../docs/configuration.md](../../docs/configuration.md) for details on cr
 ## Tips
 
 - **Use environment-specific configs:** Create separate configs for dev, staging, production
-- **Validate before deploying:** Always run `arroyo-run validate` before deployment
+- **Validate before deploying:** Always run `arroyo validate` before deployment
 - **Version control:** Keep configs in git alongside your code
 - **Document settings:** Add comments to explain configuration choices
 

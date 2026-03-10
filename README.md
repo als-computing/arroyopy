@@ -16,28 +16,29 @@ The basic structure of building an arroyo implementation is to implement groups 
 Arroyo supports declarative configuration via YAML files, making it easy to deploy and configure pipelines without writing code:
 
 ```yaml
-name: my_pipeline
-description: Process messages from ZMQ
+blocks:
+  - name: my_pipeline
+    description: Process messages from ZMQ
 
-operator:
-  class: myapp.operators.MessageProcessor
-  kwargs:
-    timeout: 30
+    operator:
+      class: myapp.operators.MessageProcessor
+      kwargs:
+        timeout: 30
 
-listeners:
-  - class: arroyopy.zmq.ZMQListener
-    kwargs:
-      address: 'tcp://127.0.0.1:5555'
+    listeners:
+      - class: arroyopy.zmq.ZMQListener
+        kwargs:
+          address: 'tcp://127.0.0.1:5555'
 
-publishers:
-  - class: arroyopy.redis.RedisPublisher
-    kwargs:
-      channel: processed_data
+    publishers:
+      - class: arroyopy.redis.RedisPublisher
+        kwargs:
+          channel: processed_data
 ```
 
 Run from the command line:
 ```bash
-arroyo-run config/pipeline.yaml
+arroyo run config/pipeline.yaml
 ```
 
 See [docs/configuration.md](docs/configuration.md) for full details.

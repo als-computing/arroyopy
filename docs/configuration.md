@@ -21,55 +21,63 @@ A **Block** is a container that holds:
 
 ### Configuration Structure
 
-A minimal block configuration looks like this:
+All YAML configurations must have a `blocks` key containing a list of block definitions.
+
+A minimal configuration with one block:
 
 ```yaml
-name: my_pipeline
-operator:
-  class: myapp.operators.MyOperator
-  kwargs:
-    timeout: 30
+blocks:
+  - name: my_pipeline
+    operator:
+      class: myapp.operators.MyOperator
+      kwargs:
+        timeout: 30
 ```
 
 A complete configuration with listeners and publishers:
 
 ```yaml
-name: my_pipeline
-description: Process messages from ZMQ and publish to Redis
+blocks:
+  - name: my_pipeline
+    description: Process messages from ZMQ and publish to Redis
 
-operator:
-  class: myapp.operators.MessageProcessor
-  kwargs:
-    batch_size: 100
-    timeout: 30
+    operator:
+      class: myapp.operators.MessageProcessor
+      kwargs:
+        batch_size: 100
+        timeout: 30
 
-listeners:
-  - class: arroyopy.zmq.ZMQListener
-    kwargs:
-      address: 'tcp://127.0.0.1:5555'
-      socket_type: 'SUB'
+    listeners:
+      - class: arroyopy.zmq.ZMQListener
+        kwargs:
+          address: 'tcp://127.0.0.1:5555'
+          socket_type: 'SUB'
 
-publishers:
-  - class: arroyopy.redis.RedisPublisher
-    kwargs:
-      host: localhost
-      port: 6379
-      channel: processed_data
+    publishers:
+      - class: arroyopy.redis.RedisPublisher
+        kwargs:
+          host: localhost
+          port: 6379
+          channel: processed_data
 ```
 
 ## Configuration Fields
 
-### Required Fields
+### Top-Level Required Fields
 
-- **`name`**: Unique identifier for the unit
+- **`blocks`**: List of block definitions (required)
+
+### Block Required Fields
+
+- **`name`**: Unique identifier for the block
 - **`operator`**: Operator configuration
   - **`class`**: Full Python path to operator class (e.g., `myapp.operators.MyOperator`)
   - **`args`** (optional): List of positional arguments
   - **`kwargs`** (optional): Dictionary of keyword arguments
 
-### Optional Fields
+### Block Optional Fields
 
-- **`description`**: Human-readable description of the unit
+- **`description`**: Human-readable description of the block
 - **`listeners`**: List of listener configurations
 - **`publishers`**: List of publisher configurations
 
@@ -122,7 +130,7 @@ blocks:
 
 ### Install
 
-After installing arroyopy, the `arroyo-run` command is available:
+After installing arroyopy, the `arroyo` command is available:
 
 ```bash
 pip install arroyopy
@@ -132,27 +140,27 @@ pip install arroyopy
 
 ```bash
 # Run a single unit
-arroyo-run config/pipeline.yaml
+arroyo run config/pipeline.yaml
 
 # Run a specific block from multi-unit config
-arroyo-run config/multi.yaml --block processing
+arroyo run config/multi.yaml --block processing
 
 # Run with verbose logging
-arroyo-run config/pipeline.yaml --verbose
+arroyo run config/pipeline.yaml --verbose
 ```
 
 ### Validate Configuration
 
 ```bash
 # Validate without running
-arroyo-run validate config/pipeline.yaml
+arroyo validate config/pipeline.yaml
 ```
 
 ### List Units
 
 ```bash
 # List all blocks in a config file
-arroyo-run list-blocks config/multi.yaml
+arroyo list-blocks config/multi.yaml
 ```
 
 ## Using in Python Code
@@ -190,67 +198,70 @@ for block in blocks:
 ### Simple ZMQ Pipeline
 
 ```yaml
-name: zmq_simple
-description: Simple ZMQ message processing
+blocks:
+  - name: zmq_simple
+    description: Simple ZMQ message processing
 
-operator:
-  class: myapp.operators.EchoOperator
+    operator:
+      class: myapp.operators.EchoOperator
 
-listeners:
-  - class: arroyopy.zmq.ZMQListener
-    kwargs:
-      address: 'tcp://127.0.0.1:5555'
+    listeners:
+      - class: arroyopy.zmq.ZMQListener
+        kwargs:
+          address: 'tcp://127.0.0.1:5555'
 
-publishers:
-  - class: arroyopy.zmq.ZMQPublisher
-    kwargs:
-      address: 'tcp://127.0.0.1:5556'
+    publishers:
+      - class: arroyopy.zmq.ZMQPublisher
+        kwargs:
+          address: 'tcp://127.0.0.1:5556'
 ```
 
 ### File Watcher to Redis
 
 ```yaml
-name: file_watcher
-description: Watch directory and publish to Redis
+blocks:
+  - name: file_watcher
+    description: Watch directory and publish to Redis
 
-operator:
-  class: arroyopy.app.redis_file_watcher.FileWatcherOperator
+    operator:
+      class: arroyopy.app.redis_file_watcher.FileWatcherOperator
 
-listeners:
-  - class: arroyopy.files.FileWatcherListener
-    kwargs:
-      watch_path: /data/incoming
-      patterns: ['*.h5', '*.tif']
+    listeners:
+      - class: arroyopy.files.FileWatcherListener
+        kwargs:
+          watch_path: /data/incoming
+          patterns: ['*.h5', '*.tif']
 
-publishers:
-  - class: arroyopy.redis.RedisPublisher
-    kwargs:
-      host: localhost
-      channel: new_files
+    publishers:
+      - class: arroyopy.redis.RedisPublisher
+        kwargs:
+          host: localhost
+          channel: new_files
 ```
 
 ### Development/Testing
 
 ```yaml
-name: dev_pipeline
-description: Development pipeline with stdout output
+blocks:
+  - name: dev_pipeline
+    description: Development pipeline with stdout output
 
-operator:
-  class: myapp.operators.DebugOperator
+    operator:
+      class: myapp.operators.DebugOperator
 
-listeners:
-  - class: arroyopy.zmq.ZMQListener
-    kwargs:
-      address: 'tcp://127.0.0.1:5555'
+    listeners:
+      - class: arroyopy.zmq.ZMQListener
+        kwargs:
+          address: 'tcp://127.0.0.1:5555'
 
-publishers:
-  # Multiple publishers for debugging
-  - class: myapp.publishers.StdoutPublisher
-    kwargs:
-      pretty_print: true
-  - class: myapp.publishers.FilePublisher
-    kwargs:
-      output_path: /tmp/debug.jsonl
+    publishers:
+      # Multiple publishers for debugging
+      - class: myapp.publishers.StdoutPublisher
+        kwargs:
+          pretty_print: true
+      - class: myapp.publishers.FilePublisher
+        kwargs:
+          output_path: /tmp/debug.jsonl
 ```
 
 ## Best Practices
@@ -287,7 +298,7 @@ block.operator.timeout = int(os.getenv('TIMEOUT', 30))
 Always validate configurations before deployment:
 
 ```bash
-arroyo-run validate config/production/pipeline.yaml
+arroyo validate config/production/pipeline.yaml
 ```
 
 ### 4. Version Control

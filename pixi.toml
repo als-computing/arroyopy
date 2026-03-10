@@ -1,6 +1,6 @@
 [workspace]
 channels = ["conda-forge"]
-platforms = ["osx-64", "osx-arm64", "linux-64", "linux-aarch64", "win-64"]
+platforms = ["osx-64", "osx-arm64", "linux-64", "linux-aarch64"]
 
 [tasks]
 # Development tasks
@@ -19,7 +19,7 @@ build = "pip install build && python -m build"
 clean = "rm -rf build dist *.egg-info .pytest_cache .coverage htmlcov"
 
 # Run tasks
-arroyo-run = "python -m arroyopy.cli"
+arroyo = "python -m arroyopy.cli"
 
 [dependencies]
 python = ">=3.11,<3.13"
