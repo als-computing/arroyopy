@@ -9,7 +9,7 @@ The basic structure of building an arroyo implementation is to implement groups 
 - `Operator` - receives `Messages` from a listener and can optionally send `Messages` to one or more `Publisher` instances
 - `Listener` - receives `Messages` from the external world, parse them into arroyo `Message` and sends them to an `Operator`
 - `Publisher` - receives `Messages` from a `Listener` and publishes them to the outside world
-- `Unit` - a container that holds one operator with any number of listeners and publishers
+- `Block` - a container that holds one operator with any number of listeners and publishers
 
 ## Configuration-Based Deployment
 

@@ -1,8 +1,8 @@
 """
-CLI tool for running arroyo units from configuration files.
+CLI tool for running arroyo blocks from configuration files.
 
 This tool provides a command-line interface to load and run
-arroyo units defined in YAML configuration files.
+arroyo blocks defined in YAML configuration files.
 """
 import asyncio
 import logging
@@ -13,19 +13,19 @@ from typing import List, Optional
 
 import typer
 
+from arroyopy.block import Block
 from arroyopy.config import (
     ConfigurationError,
-    load_unit_from_yaml,
-    load_units_from_yaml,
+    load_block_from_yaml,
+    load_blocks_from_yaml,
 )
-from arroyopy.unit import Unit
 
 app = typer.Typer(
-    help="Arroyo unit runner - Run stream processing pipelines from config files"
+    help="Arroyo block runner - Run stream processing pipelines from config files"
 )
 
-# Global list to track running units for graceful shutdown
-running_units: List[Unit] = []
+# Global list to track running blocks for graceful shutdown
+running_blocks: List[Block] = []
 
 
 # ============================================================================
@@ -33,56 +33,56 @@ running_units: List[Unit] = []
 # ============================================================================
 
 
-async def run_units_async(units: List[Unit], logger: logging.Logger) -> None:
+async def run_units_async(blocks: List[Block], logger: logging.Logger) -> None:
     """
-    Run multiple units concurrently.
+    Run multiple blocks concurrently.
 
     Pure async function that can be tested directly.
     """
     tasks = []
-    for unit in units:
-        logger.info(f"Starting unit '{unit.name}'")
-        task = asyncio.create_task(unit.start())
+    for block in blocks:
+        logger.info(f"Starting block '{block.name}'")
+        task = asyncio.create_task(block.start())
         tasks.append(task)
 
-    # Wait for all units to complete
+    # Wait for all blocks to complete
     await asyncio.gather(*tasks)
 
 
-def validate_units_info(units: List[Unit], logger: logging.Logger) -> None:
+def validate_units_info(blocks: List[Block], logger: logging.Logger) -> None:
     """
-    Validate and log information about units.
+    Validate and log information about blocks.
 
     Pure function that can be tested directly.
     """
     logger.info("✓ Configuration is valid")
-    logger.info(f"✓ Found {len(units)} unit(s):")
+    logger.info(f"✓ Found {len(blocks)} unit(s):")
 
-    for unit in units:
-        logger.info(f"  - {unit.name}")
-        logger.info(f"    Operator: {unit.operator.__class__.__name__}")
-        logger.info(f"    Listeners: {len(unit.listeners)}")
-        for listener in unit.listeners:
+    for block in blocks:
+        logger.info(f"  - {block.name}")
+        logger.info(f"    Operator: {block.operator.__class__.__name__}")
+        logger.info(f"    Listeners: {len(block.listeners)}")
+        for listener in block.listeners:
             logger.info(f"      - {listener.__class__.__name__}")
-        logger.info(f"    Publishers: {len(unit.publishers)}")
-        for publisher in unit.publishers:
+        logger.info(f"    Publishers: {len(block.publishers)}")
+        for publisher in block.publishers:
             logger.info(f"      - {publisher.__class__.__name__}")
 
 
-def format_unit_info(unit: Unit) -> dict:
+def format_block_info(block: Block) -> dict:
     """
-    Extract unit information as a dictionary.
+    Extract block information as a dictionary.
 
     Pure function that can be tested directly.
     """
     info = {
-        "name": unit.name,
-        "operator": unit.operator.__class__.__name__,
-        "listeners": len(unit.listeners),
-        "publishers": len(unit.publishers),
+        "name": block.name,
+        "operator": block.operator.__class__.__name__,
+        "listeners": len(block.listeners),
+        "publishers": len(block.publishers),
     }
-    if hasattr(unit, "description"):
-        info["description"] = unit.description
+    if hasattr(block, "description"):
+        info["description"] = block.description
     return info
 
 
@@ -96,18 +96,18 @@ def setup_logging(verbose: bool = False):
     )
 
 
-async def shutdown_units(units: List[Unit]):
-    """Gracefully shutdown all units."""
+async def shutdown_units(blocks: List[Block]):
+    """Gracefully shutdown all blocks."""
     logger = logging.getLogger(__name__)
-    logger.info(f"Shutting down {len(units)} unit(s)...")
+    logger.info(f"Shutting down {len(blocks)} unit(s)...")
 
-    for unit in units:
+    for block in blocks:
         try:
-            await unit.stop()
+            await block.stop()
         except Exception as e:
-            logger.error(f"Error stopping unit '{unit.name}': {e}")
+            logger.error(f"Error stopping block '{block.name}': {e}")
 
-    logger.info("All units stopped")
+    logger.info("All blocks stopped")
 
 
 def signal_handler(signum, frame):
@@ -117,8 +117,8 @@ def signal_handler(signum, frame):
 
     # Run async shutdown
     loop = asyncio.get_event_loop()
-    if running_units:
-        loop.create_task(shutdown_units(running_units))
+    if running_blocks:
+        loop.create_task(shutdown_units(running_blocks))
 
     sys.exit(0)
 
@@ -126,23 +126,23 @@ def signal_handler(signum, frame):
 @app.command()
 def run(
     config_file: str = typer.Argument(..., help="Path to YAML configuration file"),
-    unit_name: Optional[str] = typer.Option(
-        None, "--unit", "-u", help="Specific unit to run (if config has multiple)"
+    block_name: Optional[str] = typer.Option(
+        None, "--block", "-u", help="Specific block to run (if config has multiple)"
     ),
     verbose: bool = typer.Option(
         False, "--verbose", "-v", help="Enable verbose logging"
     ),
 ):
     """
-    Run an arroyo unit from a configuration file.
+    Run an arroyo block from a configuration file.
 
     Examples:
 
-        # Run a single unit from config
+        # Run a single block from config
         arroyo-run pipeline.yaml
 
-        # Run a specific unit from multi-unit config
-        arroyo-run config.yaml --unit data_processor
+        # Run a specific block from multi-unit config
+        arroyo-run config.yaml --block data_processor
 
         # Run with verbose logging
         arroyo-run pipeline.yaml --verbose
@@ -162,23 +162,23 @@ def run(
 
     try:
         # Load unit(s)
-        if unit_name:
-            logger.info(f"Loading unit '{unit_name}' from {config_file}")
-            unit = load_unit_from_yaml(config_file, unit_name)
-            units = [unit]
+        if block_name:
+            logger.info(f"Loading block '{block_name}' from {config_file}")
+            block = load_block_from_yaml(config_file, block_name)
+            blocks = [block]
         else:
-            logger.info(f"Loading units from {config_file}")
-            units = load_units_from_yaml(config_file)
+            logger.info(f"Loading blocks from {config_file}")
+            blocks = load_blocks_from_yaml(config_file)
 
         # Add to global list for signal handling
-        running_units.extend(units)
+        running_blocks.extend(blocks)
 
         # Set up signal handlers for graceful shutdown
         signal.signal(signal.SIGINT, signal_handler)
         signal.signal(signal.SIGTERM, signal_handler)
 
-        # Run units using extracted business logic
-        asyncio.run(run_units_async(units, logger))
+        # Run blocks using extracted business logic
+        asyncio.run(run_units_async(blocks, logger))
 
     except ConfigurationError as e:
         logger.error(f"Configuration error: {e}")
@@ -218,10 +218,10 @@ def validate(
         sys.path.insert(0, config_dir)
 
     try:
-        units = load_units_from_yaml(config_file)
+        blocks = load_blocks_from_yaml(config_file)
 
         # Use extracted business logic
-        validate_units_info(units, logger)
+        validate_units_info(blocks, logger)
 
         typer.echo("\nConfiguration is valid! ✓")
 
@@ -234,15 +234,15 @@ def validate(
 
 
 @app.command()
-def list_units(
+def list_blocks(
     config_file: str = typer.Argument(..., help="Path to YAML configuration file"),
 ):
     """
-    List all units defined in a configuration file.
+    List all blocks defined in a configuration file.
 
     Example:
 
-        arroyo-run list-units pipeline.yaml
+        arroyo-run list-blocks pipeline.yaml
     """
     logger = logging.getLogger(__name__)
 
@@ -256,12 +256,12 @@ def list_units(
         sys.path.insert(0, config_dir)
 
     try:
-        units = load_units_from_yaml(config_file)
+        blocks = load_blocks_from_yaml(config_file)
 
         typer.echo(f"\nUnits in {config_file}:\n")
 
-        for i, unit in enumerate(units, 1):
-            info = format_unit_info(unit)
+        for i, block in enumerate(blocks, 1):
+            info = format_block_info(block)
             typer.echo(f"{i}. {info['name']}")
             if "description" in info:
                 typer.echo(f"   Description: {info['description']}")

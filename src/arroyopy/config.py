@@ -1,7 +1,7 @@
 """
-Configuration loader for arroyo units.
+Configuration loader for arroyo blocks.
 
-This module provides functionality to load and instantiate arroyo units
+This module provides functionality to load and instantiate arroyo blocks
 from YAML configuration files, enabling declarative pipeline definitions.
 """
 import importlib
@@ -11,10 +11,10 @@ from typing import Any, Dict, List, Optional, Type
 
 import yaml
 
+from .block import Block
 from .listener import Listener
 from .operator import Operator
 from .publisher import Publisher
-from .unit import Unit
 
 logger = logging.getLogger(__name__)
 
@@ -89,9 +89,9 @@ def _instantiate_component(config: Dict[str, Any]) -> Any:
         raise ConfigurationError(f"Failed to instantiate {class_path}: {e}")
 
 
-def load_unit_from_config(config: Dict[str, Any]) -> Unit:
+def load_block_from_config(config: Dict[str, Any]) -> Block:
     """
-    Load a Unit from a configuration dictionary.
+    Load a Block from a configuration dictionary.
 
     Parameters
     ----------
@@ -100,8 +100,8 @@ def load_unit_from_config(config: Dict[str, Any]) -> Unit:
 
     Returns
     -------
-    Unit
-        Instantiated Unit with all components configured
+    Block
+        Instantiated Block with all components configured
 
     Raises
     ------
@@ -125,17 +125,17 @@ def load_unit_from_config(config: Dict[str, Any]) -> Unit:
     ...          'kwargs': {'host': 'localhost'}}
     ...     ]
     ... }
-    >>> unit = load_unit_from_config(config)
+    >>> block = load_block_from_config(config)
     """
     if "name" not in config:
-        raise ConfigurationError("Unit configuration must have a 'name' field")
+        raise ConfigurationError("Block configuration must have a 'name' field")
 
     if "operator" not in config:
-        raise ConfigurationError("Unit configuration must have an 'operator' field")
+        raise ConfigurationError("Block configuration must have an 'operator' field")
 
     name = config["name"]
 
-    logger.info(f"Loading unit '{name}' from configuration")
+    logger.info(f"Loading block '{name}' from configuration")
 
     # Instantiate operator
     operator = _instantiate_component(config["operator"])
@@ -178,20 +178,20 @@ def load_unit_from_config(config: Dict[str, Any]) -> Unit:
             raise ConfigurationError(f"Failed to load publisher {i}: {e}")
 
     # Create the unit
-    unit = Unit(
+    block = Block(
         name=name, operator=operator, listeners=listeners, publishers=publishers
     )
 
-    logger.info(f"Successfully loaded unit '{name}'")
-    return unit
+    logger.info(f"Successfully loaded block '{name}'")
+    return block
 
 
-def load_units_from_yaml(yaml_path: str) -> List[Unit]:
+def load_blocks_from_yaml(yaml_path: str) -> List[Block]:
     """
-    Load one or more units from a YAML file.
+    Load one or more blocks from a YAML file.
 
-    The YAML file can contain either a single unit configuration or
-    a list of unit configurations under a 'units' key.
+    The YAML file can contain either a single block configuration or
+    a list of block configurations under a 'blocks' key.
 
     Parameters
     ----------
@@ -200,8 +200,8 @@ def load_units_from_yaml(yaml_path: str) -> List[Unit]:
 
     Returns
     -------
-    List[Unit]
-        List of instantiated units
+    List[Block]
+        List of instantiated blocks
 
     Raises
     ------
@@ -210,9 +210,9 @@ def load_units_from_yaml(yaml_path: str) -> List[Unit]:
 
     Example
     -------
-    >>> units = load_units_from_yaml('config/pipeline.yaml')
-    >>> for unit in units:
-    ...     await unit.start()
+    >>> blocks = load_blocks_from_yaml('config/pipeline.yaml')
+    >>> for block in blocks:
+    ...     await block.start()
     """
     path = Path(yaml_path)
 
@@ -230,74 +230,74 @@ def load_units_from_yaml(yaml_path: str) -> List[Unit]:
     if data is None:
         raise ConfigurationError("Configuration file is empty")
 
-    # Check if we have a single unit or multiple units
-    if "units" in data:
-        # Multiple units
-        unit_configs = data["units"]
-        if not isinstance(unit_configs, list):
-            raise ConfigurationError("'units' must be a list")
+    # Check if we have a single block or multiple blocks
+    if "blocks" in data:
+        # Multiple blocks
+        block_configs = data["blocks"]
+        if not isinstance(block_configs, list):
+            raise ConfigurationError("'blocks' must be a list")
     elif "name" in data and "operator" in data:
         # Single unit
-        unit_configs = [data]
+        block_configs = [data]
     else:
         raise ConfigurationError(
-            "Configuration must contain either a 'units' list or a single unit definition"
+            "Configuration must contain either a 'blocks' list or a single block definition"
         )
 
-    units = []
-    for i, unit_config in enumerate(unit_configs):
+    blocks = []
+    for i, block_config in enumerate(block_configs):
         try:
-            unit = load_unit_from_config(unit_config)
-            units.append(unit)
+            block = load_block_from_config(block_config)
+            blocks.append(block)
         except Exception as e:
-            raise ConfigurationError(f"Failed to load unit {i}: {e}")
+            raise ConfigurationError(f"Failed to load block {i}: {e}")
 
-    logger.info(f"Loaded {len(units)} unit(s) from {yaml_path}")
-    return units
+    logger.info(f"Loaded {len(blocks)} unit(s) from {yaml_path}")
+    return blocks
 
 
-def load_unit_from_yaml(yaml_path: str, unit_name: Optional[str] = None) -> Unit:
+def load_block_from_yaml(yaml_path: str, block_name: Optional[str] = None) -> Block:
     """
-    Load a single unit from a YAML file.
+    Load a single block from a YAML file.
 
     Parameters
     ----------
     yaml_path : str
         Path to YAML configuration file
-    unit_name : str, optional
-        Name of specific unit to load (if file contains multiple units)
+    block_name : str, optional
+        Name of specific block to load (if file contains multiple blocks)
 
     Returns
     -------
-    Unit
+    Block
         The loaded unit
 
     Raises
     ------
     ConfigurationError
-        If file cannot be read, unit not found, or configuration is invalid
+        If file cannot be read, block not found, or configuration is invalid
 
     Example
     -------
-    >>> unit = load_unit_from_yaml('config/pipeline.yaml', 'zmq_processor')
-    >>> await unit.start()
+    >>> block = load_block_from_yaml('config/pipeline.yaml', 'zmq_processor')
+    >>> await block.start()
     """
-    units = load_units_from_yaml(yaml_path)
+    blocks = load_blocks_from_yaml(yaml_path)
 
-    if unit_name is None:
-        if len(units) == 1:
-            return units[0]
+    if block_name is None:
+        if len(blocks) == 1:
+            return blocks[0]
         else:
             raise ConfigurationError(
-                f"File contains {len(units)} units. Specify unit_name to select one."
+                f"File contains {len(blocks)} blocks. Specify block_name to select one."
             )
 
-    # Find unit by name
-    for unit in units:
-        if unit.name == unit_name:
-            return unit
+    # Find block by name
+    for block in blocks:
+        if block.name == block_name:
+            return block
 
     raise ConfigurationError(
-        f"Unit '{unit_name}' not found in configuration. "
-        f"Available units: {[u.name for u in units]}"
+        f"Block '{block_name}' not found in configuration. "
+        f"Available blocks: {[b.name for b in blocks]}"
     )

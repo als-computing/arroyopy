@@ -10,7 +10,7 @@ Welcome to the arroyopy documentation!
 
 ## User Guides
 
-- [Configuration Guide](configuration.md) - How to use YAML configuration for units
+- [Configuration Guide](configuration.md) - How to use YAML configuration for blocks
 
 ## Development
 

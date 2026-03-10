@@ -23,11 +23,11 @@ Demonstrates multiple units in a single configuration file:
 
 **Usage:**
 ```bash
-# Run all units
-arroyo-run multi_unit.yaml
+# Run all blocks
+arroyo-run multi_block.yaml
 
-# Run specific unit
-arroyo-run multi_unit.yaml --unit data_ingestion
+# Run specific block
+arroyo-run multi_block.yaml --block data_ingestion
 ```
 
 ### file_watcher.yaml

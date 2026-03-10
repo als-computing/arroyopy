@@ -6,40 +6,40 @@ from unittest.mock import AsyncMock, Mock, patch
 import pytest
 from typer.testing import CliRunner
 
+from arroyopy.block import Block
 from arroyopy.cli import (
     app,
-    format_unit_info,
+    format_block_info,
     run_units_async,
     setup_logging,
     shutdown_units,
     validate_units_info,
 )
 from arroyopy.config import ConfigurationError
-from arroyopy.unit import Unit
 
 runner = CliRunner()
 
 
 @pytest.fixture
 def mock_unit():
-    """Create a mock Unit instance."""
-    unit = Mock(spec=Unit)
-    unit.name = "test_unit"
-    unit.start = AsyncMock()
-    unit.stop = AsyncMock()
-    unit.operator = Mock()
-    unit.operator.__class__.__name__ = "TestOperator"
-    unit.listeners = [Mock()]
-    unit.listeners[0].__class__.__name__ = "TestListener"
-    unit.publishers = [Mock()]
-    unit.publishers[0].__class__.__name__ = "TestPublisher"
-    return unit
+    """Create a mock Block instance."""
+    block = Mock(spec=Block)
+    block.name = "test_unit"
+    block.start = AsyncMock()
+    block.stop = AsyncMock()
+    block.operator = Mock()
+    block.operator.__class__.__name__ = "TestOperator"
+    block.listeners = [Mock()]
+    block.listeners[0].__class__.__name__ = "TestListener"
+    block.publishers = [Mock()]
+    block.publishers[0].__class__.__name__ = "TestPublisher"
+    return block
 
 
 @pytest.fixture
 def mock_units(mock_unit):
-    """Create a list of mock units."""
-    unit2 = Mock(spec=Unit)
+    """Create a list of mock blocks."""
+    unit2 = Mock(spec=Block)
     unit2.name = "test_unit_2"
     unit2.start = AsyncMock()
     unit2.stop = AsyncMock()
@@ -60,15 +60,15 @@ def temp_config_file(tmp_path):
 
 @pytest.fixture
 def mock_load_units(mock_unit):
-    """Fixture to patch load_units_from_yaml."""
-    with patch("arroyopy.cli.load_units_from_yaml", return_value=[mock_unit]) as mock:
+    """Fixture to patch load_blocks_from_yaml."""
+    with patch("arroyopy.cli.load_blocks_from_yaml", return_value=[mock_unit]) as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_load_unit(mock_unit):
-    """Fixture to patch load_unit_from_yaml."""
-    with patch("arroyopy.cli.load_unit_from_yaml", return_value=mock_unit) as mock:
+    """Fixture to patch load_block_from_yaml."""
+    with patch("arroyopy.cli.load_block_from_yaml", return_value=mock_unit) as mock:
         yield mock
 
 
@@ -105,8 +105,8 @@ def mock_asyncio_run():
 
 @pytest.fixture
 def mock_format_logic():
-    """Fixture to wrap format_unit_info for spying."""
-    with patch("arroyopy.cli.format_unit_info", wraps=format_unit_info) as mock:
+    """Fixture to wrap format_block_info for spying."""
+    with patch("arroyopy.cli.format_block_info", wraps=format_block_info) as mock:
         yield mock
 
 
@@ -127,16 +127,16 @@ class TestBusinessLogic:
 
     @pytest.mark.asyncio
     async def test_run_units_async(self, mock_units, caplog):
-        """Test running units concurrently."""
+        """Test running blocks concurrently."""
         logger = logging.getLogger(__name__)
 
         with caplog.at_level(logging.INFO):
             await run_units_async(mock_units, logger)
 
-        # Verify all units were started
-        for unit in mock_units:
-            unit.start.assert_called_once()
-            assert f"Starting unit '{unit.name}'" in caplog.text
+        # Verify all blocks were started
+        for block in mock_units:
+            block.start.assert_called_once()
+            assert f"Starting block '{block.name}'" in caplog.text
 
     def test_validate_units_info(self, mock_units, caplog):
         """Test validation info logging."""
@@ -153,20 +153,20 @@ class TestBusinessLogic:
         assert "TestOperator" in caplog.text
         assert "AnotherOperator" in caplog.text
 
-    def test_format_unit_info(self, mock_unit):
-        """Test unit info formatting."""
-        info = format_unit_info(mock_unit)
+    def test_format_block_info(self, mock_unit):
+        """Test block info formatting."""
+        info = format_block_info(mock_unit)
 
         assert info["name"] == "test_unit"
         assert info["operator"] == "TestOperator"
         assert info["listeners"] == 1
         assert info["publishers"] == 1
 
-    def test_format_unit_info_with_description(self, mock_unit):
-        """Test unit info formatting with description."""
+    def test_format_block_info_with_description(self, mock_unit):
+        """Test block info formatting with description."""
         mock_unit.description = "A test unit"
 
-        info = format_unit_info(mock_unit)
+        info = format_block_info(mock_unit)
 
         assert info["description"] == "A test unit"
 
@@ -197,32 +197,32 @@ class TestShutdownUnits:
 
     @pytest.mark.asyncio
     async def test_shutdown_units_success(self, mock_units, caplog):
-        """Test successful shutdown of all units."""
+        """Test successful shutdown of all blocks."""
         with caplog.at_level(logging.INFO):
             await shutdown_units(mock_units)
 
-        # Verify all units were stopped
-        for unit in mock_units:
-            unit.stop.assert_called_once()
+        # Verify all blocks were stopped
+        for block in mock_units:
+            block.stop.assert_called_once()
 
         # Verify logging
         assert "Shutting down 2 unit(s)" in caplog.text
-        assert "All units stopped" in caplog.text
+        assert "All blocks stopped" in caplog.text
 
     @pytest.mark.asyncio
     async def test_shutdown_units_with_error(self, mock_units, caplog):
-        """Test shutdown when a unit raises an error."""
-        # Make first unit raise an error on stop
+        """Test shutdown when a block raises an error."""
+        # Make first block raise an error on stop
         mock_units[0].stop.side_effect = Exception("Stop failed")
 
         with caplog.at_level(logging.ERROR):
             await shutdown_units(mock_units)
 
         # Verify error was logged
-        assert "Error stopping unit 'test_unit'" in caplog.text
+        assert "Error stopping block 'test_unit'" in caplog.text
         assert "Stop failed" in caplog.text
 
-        # Verify second unit was still stopped
+        # Verify second block was still stopped
         mock_units[1].stop.assert_called_once()
 
 
@@ -244,7 +244,7 @@ class TestRunCommand:
     def test_run_configuration_error(self, temp_config_file, caplog):
         """Test run command with configuration error."""
         with patch(
-            "arroyopy.cli.load_units_from_yaml",
+            "arroyopy.cli.load_blocks_from_yaml",
             side_effect=ConfigurationError("Invalid config"),
         ):
             with caplog.at_level(logging.ERROR):
@@ -286,14 +286,14 @@ class TestValidateCommand:
         # Verify business logic was called with correct parameters
         mock_validate_logic.assert_called_once()
         args = mock_validate_logic.call_args[0]
-        assert args[0] == [mock_unit]  # units
+        assert args[0] == [mock_unit]  # blocks
         # args[1] is the logger
         assert result.exit_code == 0
 
     def test_validate_configuration_error(self, temp_config_file, caplog):
         """Test validate with configuration error."""
         with patch(
-            "arroyopy.cli.load_units_from_yaml",
+            "arroyopy.cli.load_blocks_from_yaml",
             side_effect=ConfigurationError("Bad config"),
         ):
             with caplog.at_level(logging.ERROR):
@@ -304,18 +304,18 @@ class TestValidateCommand:
 
 
 class TestListUnitsCommand:
-    """Test the 'list-units' command."""
+    """Test the 'list-blocks' command."""
 
     def test_list_units_file_not_found(self):
-        """Test list-units command with non-existent file."""
-        result = runner.invoke(app, ["list-units", "nonexistent.yaml"])
+        """Test list-blocks command with non-existent file."""
+        result = runner.invoke(app, ["list-blocks", "nonexistent.yaml"])
         assert result.exit_code == 1
 
     def test_list_units_calls_format_logic(
         self, temp_config_file, mock_unit, mock_load_units, mock_format_logic
     ):
-        """Test that list-units uses the format_unit_info function."""
-        result = runner.invoke(app, ["list-units", temp_config_file])
+        """Test that list-blocks uses the format_block_info function."""
+        result = runner.invoke(app, ["list-blocks", temp_config_file])
 
         # Verify format function was called
         mock_format_logic.assert_called_once_with(mock_unit)
@@ -323,13 +323,13 @@ class TestListUnitsCommand:
         assert "test_unit" in result.stdout
 
     def test_list_units_configuration_error(self, temp_config_file, caplog):
-        """Test list-units with configuration error."""
+        """Test list-blocks with configuration error."""
         with patch(
-            "arroyopy.cli.load_units_from_yaml",
+            "arroyopy.cli.load_blocks_from_yaml",
             side_effect=ConfigurationError("Bad config"),
         ):
             with caplog.at_level(logging.ERROR):
-                result = runner.invoke(app, ["list-units", temp_config_file])
+                result = runner.invoke(app, ["list-blocks", temp_config_file])
 
             assert result.exit_code == 1
             assert "Configuration error" in caplog.text

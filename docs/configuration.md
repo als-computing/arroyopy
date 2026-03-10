@@ -5,23 +5,23 @@ This guide explains how to use arroyo's configuration system to define and run s
 ## Overview
 
 Arroyo's configuration system allows you to:
-- Define processing units (operator + listeners + publishers) in YAML files
+- Define processing blocks (operator + listeners + publishers) in YAML files
 - Instantiate components with arguments and keyword arguments
 - Run pipelines from the command line without writing Python code
-- Manage multiple units in a single configuration file
+- Manage multiple blocks in a single configuration file
 
 ## Core Concepts
 
-### Unit
+### Block
 
-A **Unit** is a container that holds:
+A **Block** is a container that holds:
 - **One Operator**: Processes messages
 - **Any number of Listeners**: Sources that feed messages to the operator
 - **Any number of Publishers**: Sinks that receive processed messages
 
 ### Configuration Structure
 
-A minimal unit configuration looks like this:
+A minimal block configuration looks like this:
 
 ```yaml
 name: my_pipeline
@@ -89,10 +89,10 @@ kwargs:  # optional dictionary
 
 ## Multiple Units
 
-You can define multiple units in a single file:
+You can define multiple blocks in a single file:
 
 ```yaml
-units:
+blocks:
   - name: ingestion
     operator:
       class: myapp.operators.Ingestor
@@ -128,14 +128,14 @@ After installing arroyopy, the `arroyo-run` command is available:
 pip install arroyopy
 ```
 
-### Run a Unit
+### Run a Block
 
 ```bash
 # Run a single unit
 arroyo-run config/pipeline.yaml
 
-# Run a specific unit from multi-unit config
-arroyo-run config/multi.yaml --unit processing
+# Run a specific block from multi-unit config
+arroyo-run config/multi.yaml --block processing
 
 # Run with verbose logging
 arroyo-run config/pipeline.yaml --verbose
@@ -151,38 +151,38 @@ arroyo-run validate config/pipeline.yaml
 ### List Units
 
 ```bash
-# List all units in a config file
-arroyo-run list-units config/multi.yaml
+# List all blocks in a config file
+arroyo-run list-blocks config/multi.yaml
 ```
 
 ## Using in Python Code
 
-You can also load and run units programmatically:
+You can also load and run blocks programmatically:
 
 ```python
 import asyncio
-from arroyopy import load_unit_from_yaml, load_units_from_yaml
+from arroyopy import load_block_from_yaml, load_blocks_from_yaml
 
 # Load a single unit
 async def main():
-    unit = load_unit_from_yaml('config/pipeline.yaml')
-    await unit.start()
+    block = load_block_from_yaml('config/pipeline.yaml')
+    await block.start()
 
 asyncio.run(main())
 ```
 
 ```python
-# Load specific unit from multi-unit config
-unit = load_unit_from_yaml('config/multi.yaml', unit_name='processing')
-await unit.start()
+# Load specific block from multi-unit config
+block = load_block_from_yaml('config/multi.yaml', block_name='processing')
+await block.start()
 ```
 
 ```python
-# Load all units
-units = load_units_from_yaml('config/multi.yaml')
-for unit in units:
-    print(f"Found unit: {unit.name}")
-    await unit.start()
+# Load all blocks
+blocks = load_blocks_from_yaml('config/multi.yaml')
+for block in blocks:
+    print(f"Found unit: {block.name}")
+    await block.start()
 ```
 
 ## Example Configurations
@@ -275,11 +275,11 @@ While YAML doesn't directly support environment variables, you can:
 
 ```python
 import os
-from arroyopy import load_unit_from_yaml
+from arroyopy import load_block_from_yaml
 
-unit = load_unit_from_yaml('config/pipeline.yaml')
+block = load_block_from_yaml('config/pipeline.yaml')
 # Override from environment
-unit.operator.timeout = int(os.getenv('TIMEOUT', 30))
+block.operator.timeout = int(os.getenv('TIMEOUT', 30))
 ```
 
 ### 3. Validate Configurations
@@ -326,7 +326,7 @@ Solution: Ensure the module path is correct and the package is installed.
 
 **ConfigurationError: Missing required field**
 ```
-Unit configuration must have a 'name' field
+Block configuration must have a 'name' field
 ```
 Solution: Add all required fields to your configuration.
 
@@ -343,7 +343,7 @@ Solution: Verify your class inherits from the correct base class.
 Load configuration from multiple sources:
 
 ```python
-from arroyopy.config import load_unit_from_config
+from arroyopy.config import load_block_from_config
 import yaml
 
 # Load base config
@@ -355,7 +355,7 @@ with open(f'config/{env}.yaml') as f:
     overrides = yaml.safe_load(f)
     config.update(overrides)
 
-unit = load_unit_from_config(config)
+block = load_block_from_config(config)
 ```
 
 ### Custom Component Discovery
@@ -376,24 +376,24 @@ sys.path.append('/path/to/custom/components')
 Build configuration in code:
 
 ```python
-from arroyopy import Unit
+from arroyopy import Block
 from myapp.operators import MyOperator
 from arroyopy.zmq import ZMQListener
 
 operator = MyOperator(timeout=30)
 listener = ZMQListener(operator, 'tcp://127.0.0.1:5555')
 
-unit = Unit(
+block = Block(
     name='programmatic',
     operator=operator,
     listeners=[listener]
 )
 
-await unit.start()
+await block.start()
 ```
 
 ## See Also
 
-- [Unit API Reference](api/unit.md)
+- [Block API Reference](api/block.md)
 - [Configuration API Reference](api/config.md)
 - [Example Configurations](../examples/config/)

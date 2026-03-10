@@ -61,7 +61,7 @@ Check that arroyopy is installed:
 arroyo-run --help
 ```
 
-You should see the available commands: `run`, `validate`, and `list-units`.
+You should see the available commands: `run`, `validate`, and `list-blocks`.
 
 ## Quick Start
 

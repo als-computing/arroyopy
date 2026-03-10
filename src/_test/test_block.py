@@ -1,5 +1,5 @@
 """
-Unit tests for the Unit class and configuration system.
+Block tests for the Block class and configuration system.
 """
 import tempfile
 from pathlib import Path
@@ -7,19 +7,19 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
+from arroyopy.block import Block
 from arroyopy.config import (
     ConfigurationError,
     _import_class,
     _instantiate_component,
-    load_unit_from_config,
-    load_unit_from_yaml,
-    load_units_from_yaml,
+    load_block_from_config,
+    load_block_from_yaml,
+    load_blocks_from_yaml,
 )
 from arroyopy.listener import Listener
 from arroyopy.operator import Operator
 from arroyopy.publisher import Publisher
 from arroyopy.schemas import Message
-from arroyopy.unit import Unit
 
 
 # Concrete operator for YAML/config loading tests
@@ -78,56 +78,56 @@ def mock_publisher():
 
 
 def test_unit_initialization(mock_operator):
-    """Test basic unit initialization."""
-    unit = Unit(name="test_unit", operator=mock_operator)
+    """Test basic block initialization."""
+    block = Block(name="test_unit", operator=mock_operator)
 
-    assert unit.name == "test_unit"
-    assert unit.operator is mock_operator
-    assert unit.listeners == []
-    assert unit.publishers == []
+    assert block.name == "test_unit"
+    assert block.operator is mock_operator
+    assert block.listeners == []
+    assert block.publishers == []
 
 
 @pytest.mark.asyncio
 async def test_unit_with_components(mock_operator, mock_listener, mock_publisher):
-    """Test unit initialization with listeners and publishers."""
+    """Test block initialization with listeners and publishers."""
     listener = mock_listener(mock_operator)
 
-    # Create unit without components first to avoid event loop issues
-    unit = Unit(name="test_unit", operator=mock_operator)
+    # Create block without components first to avoid event loop issues
+    block = Block(name="test_unit", operator=mock_operator)
 
     # Add components using async methods
-    await unit.add_listener(listener)
-    unit.add_publisher(mock_publisher)
+    await block.add_listener(listener)
+    block.add_publisher(mock_publisher)
 
-    assert len(unit.listeners) == 1
-    assert len(unit.publishers) == 1
+    assert len(block.listeners) == 1
+    assert len(block.publishers) == 1
 
 
 @pytest.mark.asyncio
 async def test_add_listener(mock_operator, mock_listener):
-    """Test adding a listener to a unit."""
-    unit = Unit(name="test_unit", operator=mock_operator)
+    """Test adding a listener to a block."""
+    block = Block(name="test_unit", operator=mock_operator)
     listener = mock_listener(mock_operator)
 
-    await unit.add_listener(listener)
+    await block.add_listener(listener)
 
-    assert len(unit.listeners) == 1
+    assert len(block.listeners) == 1
 
 
 def test_add_publisher(mock_operator, mock_publisher):
-    """Test adding a publisher to a unit."""
-    unit = Unit(name="test_unit", operator=mock_operator)
+    """Test adding a publisher to a block."""
+    block = Block(name="test_unit", operator=mock_operator)
 
-    unit.add_publisher(mock_publisher)
+    block.add_publisher(mock_publisher)
 
-    assert len(unit.publishers) == 1
+    assert len(block.publishers) == 1
 
 
 def test_unit_repr(mock_operator):
-    """Test unit string representation."""
-    unit = Unit(name="test_unit", operator=mock_operator)
+    """Test block string representation."""
+    block = Block(name="test_unit", operator=mock_operator)
 
-    repr_str = repr(unit)
+    repr_str = repr(block)
     assert "test_unit" in repr_str
 
 
@@ -161,7 +161,7 @@ def test_import_class_invalid_path():
 
 def test_instantiate_with_kwargs():
     """Test instantiation with keyword arguments."""
-    config = {"class": "_test.test_unit.ConcreteOperator", "kwargs": {}}
+    config = {"class": "_test.test_block.ConcreteOperator", "kwargs": {}}
 
     component = _instantiate_component(config)
     assert isinstance(component, Operator)
@@ -188,34 +188,34 @@ def test_instantiate_invalid_class():
 # ============================================================================
 
 
-def test_load_unit_from_config_minimal():
-    """Test loading a minimal unit configuration."""
+def test_load_block_from_config_minimal():
+    """Test loading a minimal block configuration."""
     config = {
         "name": "test_unit",
-        "operator": {"class": "_test.test_unit.ConcreteOperator"},
+        "operator": {"class": "_test.test_block.ConcreteOperator"},
     }
 
-    unit = load_unit_from_config(config)
-    assert unit.name == "test_unit"
-    assert isinstance(unit.operator, ConcreteOperator)
-    assert len(unit.listeners) == 0
-    assert len(unit.publishers) == 0
+    block = load_block_from_config(config)
+    assert block.name == "test_unit"
+    assert isinstance(block.operator, ConcreteOperator)
+    assert len(block.listeners) == 0
+    assert len(block.publishers) == 0
 
 
 def test_load_unit_missing_name():
-    """Test loading unit with missing name."""
-    config = {"operator": {"class": "_test.test_unit.ConcreteOperator"}}
+    """Test loading block with missing name."""
+    config = {"operator": {"class": "_test.test_block.ConcreteOperator"}}
 
     with pytest.raises(ConfigurationError, match="must have a 'name' field"):
-        load_unit_from_config(config)
+        load_block_from_config(config)
 
 
 def test_load_unit_missing_operator():
-    """Test loading unit with missing operator."""
+    """Test loading block with missing operator."""
     config = {"name": "test_unit"}
 
     with pytest.raises(ConfigurationError, match="must have an 'operator' field"):
-        load_unit_from_config(config)
+        load_block_from_config(config)
 
 
 # ============================================================================
@@ -224,11 +224,11 @@ def test_load_unit_missing_operator():
 
 
 def test_load_single_unit_from_yaml():
-    """Test loading a single unit from YAML file."""
+    """Test loading a single block from YAML file."""
     yaml_content = """
 name: test_unit
 operator:
-  class: _test.test_unit.ConcreteOperator
+  class: _test.test_block.ConcreteOperator
 """
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
@@ -236,24 +236,24 @@ operator:
         yaml_path = f.name
 
     try:
-        units = load_units_from_yaml(yaml_path)
-        assert len(units) == 1
-        assert units[0].name == "test_unit"
-        assert isinstance(units[0].operator, ConcreteOperator)
+        blocks = load_blocks_from_yaml(yaml_path)
+        assert len(blocks) == 1
+        assert blocks[0].name == "test_unit"
+        assert isinstance(blocks[0].operator, ConcreteOperator)
     finally:
         Path(yaml_path).unlink()
 
 
 def test_load_multiple_units_from_yaml():
-    """Test loading multiple units from YAML file."""
+    """Test loading multiple blocks from YAML file."""
     yaml_content = """
-units:
-  - name: unit1
+blocks:
+  - name: block1
     operator:
-      class: _test.test_unit.ConcreteOperator
-  - name: unit2
+      class: _test.test_block.ConcreteOperator
+  - name: block2
     operator:
-      class: _test.test_unit.ConcreteOperator
+      class: _test.test_block.ConcreteOperator
 """
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
@@ -261,24 +261,24 @@ units:
         yaml_path = f.name
 
     try:
-        units = load_units_from_yaml(yaml_path)
-        assert len(units) == 2
-        assert units[0].name == "unit1"
-        assert units[1].name == "unit2"
+        blocks = load_blocks_from_yaml(yaml_path)
+        assert len(blocks) == 2
+        assert blocks[0].name == "block1"
+        assert blocks[1].name == "block2"
     finally:
         Path(yaml_path).unlink()
 
 
 def test_load_unit_by_name():
-    """Test loading a specific unit by name."""
+    """Test loading a specific block by name."""
     yaml_content = """
-units:
-  - name: unit1
+blocks:
+  - name: block1
     operator:
-      class: _test.test_unit.ConcreteOperator
-  - name: unit2
+      class: _test.test_block.ConcreteOperator
+  - name: block2
     operator:
-      class: _test.test_unit.ConcreteOperator
+      class: _test.test_block.ConcreteOperator
 """
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
@@ -286,8 +286,8 @@ units:
         yaml_path = f.name
 
     try:
-        unit = load_unit_from_yaml(yaml_path, "unit2")
-        assert unit.name == "unit2"
+        block = load_block_from_yaml(yaml_path, "block2")
+        assert block.name == "block2"
     finally:
         Path(yaml_path).unlink()
 
@@ -295,7 +295,7 @@ units:
 def test_load_nonexistent_file():
     """Test loading from nonexistent file."""
     with pytest.raises(ConfigurationError, match="not found"):
-        load_units_from_yaml("/nonexistent/path.yaml")
+        load_blocks_from_yaml("/nonexistent/path.yaml")
 
 
 def test_load_empty_yaml():
@@ -306,7 +306,7 @@ def test_load_empty_yaml():
 
     try:
         with pytest.raises(ConfigurationError, match="empty"):
-            load_units_from_yaml(yaml_path)
+            load_blocks_from_yaml(yaml_path)
     finally:
         Path(yaml_path).unlink()
 
@@ -319,68 +319,68 @@ def test_load_invalid_yaml():
 
     try:
         with pytest.raises(ConfigurationError, match="parse"):
-            load_units_from_yaml(yaml_path)
+            load_blocks_from_yaml(yaml_path)
     finally:
         Path(yaml_path).unlink()
 
 
 def test_load_unit_invalid_operator_type():
-    """Test loading unit with invalid operator type (not an Operator instance)."""
+    """Test loading block with invalid operator type (not an Operator instance)."""
     config = {
         "name": "test_unit",
-        "operator": {"class": "_test.test_unit.NotAComponent"},  # Not an Operator
+        "operator": {"class": "_test.test_block.NotAComponent"},  # Not an Operator
     }
 
     with pytest.raises(ConfigurationError, match="must be an instance of Operator"):
-        load_unit_from_config(config)
+        load_block_from_config(config)
 
 
 def test_load_unit_invalid_listener_type():
-    """Test loading unit with invalid listener type."""
+    """Test loading block with invalid listener type."""
     config = {
         "name": "test_unit",
-        "operator": {"class": "_test.test_unit.ConcreteOperator"},
-        "listeners": [{"class": "_test.test_unit.NotAComponent"}],  # Not a Listener
+        "operator": {"class": "_test.test_block.ConcreteOperator"},
+        "listeners": [{"class": "_test.test_block.NotAComponent"}],  # Not a Listener
     }
 
     with pytest.raises(ConfigurationError, match="must be an instance of Listener"):
-        load_unit_from_config(config)
+        load_block_from_config(config)
 
 
 def test_load_unit_invalid_publisher_type():
-    """Test loading unit with invalid publisher type."""
+    """Test loading block with invalid publisher type."""
     config = {
         "name": "test_unit",
-        "operator": {"class": "_test.test_unit.ConcreteOperator"},
-        "publishers": [{"class": "_test.test_unit.NotAComponent"}],  # Not a Publisher
+        "operator": {"class": "_test.test_block.ConcreteOperator"},
+        "publishers": [{"class": "_test.test_block.NotAComponent"}],  # Not a Publisher
     }
 
     with pytest.raises(ConfigurationError, match="must be an instance of Publisher"):
-        load_unit_from_config(config)
+        load_block_from_config(config)
 
 
 def test_load_unit_listener_error():
     """Test error handling when loading a listener fails."""
     config = {
         "name": "test_unit",
-        "operator": {"class": "_test.test_unit.ConcreteOperator"},
+        "operator": {"class": "_test.test_block.ConcreteOperator"},
         "listeners": [{"class": "nonexistent.Listener"}],
     }
 
     with pytest.raises(ConfigurationError, match="Failed to load listener"):
-        load_unit_from_config(config)
+        load_block_from_config(config)
 
 
 def test_load_unit_publisher_error():
     """Test error handling when loading a publisher fails."""
     config = {
         "name": "test_unit",
-        "operator": {"class": "_test.test_unit.ConcreteOperator"},
+        "operator": {"class": "_test.test_block.ConcreteOperator"},
         "publishers": [{"class": "nonexistent.Publisher"}],
     }
 
     with pytest.raises(ConfigurationError, match="Failed to load publisher"):
-        load_unit_from_config(config)
+        load_block_from_config(config)
 
 
 def test_load_units_invalid_structure():
@@ -396,17 +396,17 @@ another_key: another_value
 
     try:
         with pytest.raises(
-            ConfigurationError, match="must contain either a 'units' list"
+            ConfigurationError, match="must contain either a 'blocks' list"
         ):
-            load_units_from_yaml(yaml_path)
+            load_blocks_from_yaml(yaml_path)
     finally:
         Path(yaml_path).unlink()
 
 
 def test_load_units_invalid_units_type():
-    """Test loading YAML where 'units' is not a list."""
+    """Test loading YAML where 'blocks' is not a list."""
     yaml_content = """
-units:
+blocks:
   name: not_a_list
 """
 
@@ -415,17 +415,17 @@ units:
         yaml_path = f.name
 
     try:
-        with pytest.raises(ConfigurationError, match="'units' must be a list"):
-            load_units_from_yaml(yaml_path)
+        with pytest.raises(ConfigurationError, match="'blocks' must be a list"):
+            load_blocks_from_yaml(yaml_path)
     finally:
         Path(yaml_path).unlink()
 
 
-def test_load_units_unit_config_error():
-    """Test error handling when loading a unit from YAML fails."""
+def test_load_units_block_config_error():
+    """Test error handling when loading a block from YAML fails."""
     yaml_content = """
-units:
-  - name: unit1
+blocks:
+  - name: block1
     operator:
       class: nonexistent.Operator
 """
@@ -435,22 +435,22 @@ units:
         yaml_path = f.name
 
     try:
-        with pytest.raises(ConfigurationError, match="Failed to load unit"):
-            load_units_from_yaml(yaml_path)
+        with pytest.raises(ConfigurationError, match="Failed to load block"):
+            load_blocks_from_yaml(yaml_path)
     finally:
         Path(yaml_path).unlink()
 
 
-def test_load_unit_from_yaml_multiple_without_name():
-    """Test loading from YAML with multiple units but no unit_name specified."""
+def test_load_block_from_yaml_multiple_without_name():
+    """Test loading from YAML with multiple blocks but no block_name specified."""
     yaml_content = """
-units:
-  - name: unit1
+blocks:
+  - name: block1
     operator:
-      class: _test.test_unit.ConcreteOperator
-  - name: unit2
+      class: _test.test_block.ConcreteOperator
+  - name: block2
     operator:
-      class: _test.test_unit.ConcreteOperator
+      class: _test.test_block.ConcreteOperator
 """
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
@@ -458,18 +458,18 @@ units:
         yaml_path = f.name
 
     try:
-        with pytest.raises(ConfigurationError, match="Specify unit_name"):
-            load_unit_from_yaml(yaml_path)
+        with pytest.raises(ConfigurationError, match="Specify block_name"):
+            load_block_from_yaml(yaml_path)
     finally:
         Path(yaml_path).unlink()
 
 
-def test_load_unit_from_yaml_not_found():
-    """Test loading a unit by name that doesn't exist."""
+def test_load_block_from_yaml_not_found():
+    """Test loading a block by name that doesn't exist."""
     yaml_content = """
-name: unit1
+name: block1
 operator:
-  class: _test.test_unit.ConcreteOperator
+  class: _test.test_block.ConcreteOperator
 """
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
@@ -478,20 +478,20 @@ operator:
 
     try:
         with pytest.raises(ConfigurationError, match="not found"):
-            load_unit_from_yaml(yaml_path, "nonexistent")
+            load_block_from_yaml(yaml_path, "nonexistent")
     finally:
         Path(yaml_path).unlink()
 
 
 # ============================================================================
-# Unit start/stop tests
+# Block start/stop tests
 # ============================================================================
 
 
 @pytest.mark.asyncio
 async def test_unit_start_stop(mock_operator, mock_listener):
-    """Test unit start and stop methods."""
-    unit = Unit(name="test_unit", operator=mock_operator)
+    """Test block start and stop methods."""
+    block = Block(name="test_unit", operator=mock_operator)
     listener = mock_listener(mock_operator)
 
     # Configure the mock operator to stop immediately
@@ -501,21 +501,21 @@ async def test_unit_start_stop(mock_operator, mock_listener):
     mock_operator.start = AsyncMock(side_effect=mock_start)
     mock_operator.stop_requested = False
 
-    await unit.add_listener(listener)
+    await block.add_listener(listener)
 
     # Mock the start to return immediately
     listener.start.return_value = None
 
-    # Start the unit (with timeout to prevent hanging)
+    # Start the block (with timeout to prevent hanging)
     import asyncio
 
-    start_task = asyncio.create_task(unit.start())
+    start_task = asyncio.create_task(block.start())
 
     # Give it a moment to start
     await asyncio.sleep(0.1)
 
     # Stop the unit
-    await unit.stop()
+    await block.stop()
 
     # Cancel the start task
     start_task.cancel()
@@ -531,23 +531,23 @@ async def test_unit_start_stop(mock_operator, mock_listener):
 
 @pytest.mark.asyncio
 async def test_unit_stop_when_not_running(mock_operator):
-    """Test stopping a unit that isn't running."""
-    unit = Unit(name="test_unit", operator=mock_operator)
+    """Test stopping a block that isn't running."""
+    block = Block(name="test_unit", operator=mock_operator)
 
     # This should not raise an error, just log a warning
-    await unit.stop()
+    await block.stop()
 
 
 @pytest.mark.asyncio
 async def test_unit_start_when_already_running(mock_operator):
-    """Test starting a unit that is already running."""
-    unit = Unit(name="test_unit", operator=mock_operator)
+    """Test starting a block that is already running."""
+    block = Block(name="test_unit", operator=mock_operator)
 
-    # Set the unit as already running
-    unit._running = True
+    # Set the block as already running
+    block._running = True
 
     # This should not raise an error, just log a warning
-    await unit.start()
+    await block.start()
 
     # start() should not have been called on the operator
     mock_operator.start.assert_not_called()

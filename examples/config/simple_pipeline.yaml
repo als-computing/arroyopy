@@ -1,9 +1,9 @@
-# Example arroyo unit configuration - Simple ZMQ Pipeline
+# Example arroyo block configuration - Simple ZMQ Pipeline
 #
 # This is a template configuration. For a complete, runnable demo, see:
 # examples/simple_demo/README.md
 #
-# This configuration defines a single unit that:
+# This configuration defines a single block that:
 # - Listens for messages on a ZMQ socket
 # - Processes them with a custom operator
 # - Publishes results to another ZMQ socket

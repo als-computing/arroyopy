@@ -1,5 +1,5 @@
 """
-Unit tests for the schemas module.
+Block tests for the schemas module.
 """
 import numpy as np
 import pandas as pd
