@@ -8,7 +8,7 @@ This guide will help you get started with developing arroyopy using Pixi.
 
 - **Fast**: Parallel dependency resolution and downloads
 - **Reproducible**: Lock files ensure consistent environments across platforms
-- **Cross-platform**: Works on Linux, macOS, and Windows
+- **Cross-platform**: Works on Linux, macOS
 - **Easy**: Simple commands for common tasks
 - **Flexible**: Multiple environments for different purposes
 
@@ -25,14 +25,6 @@ curl -fsSL https://pixi.sh/install.sh | bash
 ```bash
 brew install pixi
 ```
-
-### Windows
-
-```powershell
-iwr -useb https://pixi.sh/install.ps1 | iex
-```
-
-For other installation methods, see the [official installation guide](https://pixi.sh/latest/#installation).
 
 ## Quick Start
 

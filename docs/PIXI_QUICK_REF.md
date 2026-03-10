@@ -9,9 +9,6 @@ curl -fsSL https://pixi.sh/install.sh | bash
 # macOS (Homebrew)
 brew install pixi
 
-# Windows (PowerShell)
-iwr -useb https://pixi.sh/install.ps1 | iex
-```
 
 ## First Time Setup
 

@@ -11,7 +11,7 @@ This document summarizes the conversion of arroyopy to use Pixi for package and 
    - Dependencies organized by category
    - Multiple environment definitions
    - Task definitions for common operations
-   - Cross-platform support (Linux, macOS, Windows)
+   - Cross-platform support (Linux, macOS)
 
 2. **`docs/pixi-guide.md`** - Comprehensive guide for using Pixi with arroyopy
 
@@ -31,7 +31,7 @@ This document summarizes the conversion of arroyopy to use Pixi for package and 
    - Improved development workflow documentation
 
 3. **`.github/workflows/ci.yaml`**
-   - Added `test-pixi` job that runs tests on Linux, macOS, and Windows using Pixi
+   - Added `test-pixi` job that runs tests on Linux, macOS, using Pixi
    - Kept `test-pip` job for backward compatibility
    - Tests now run on multiple platforms
 
@@ -79,7 +79,7 @@ Common tasks defined in `pixi.toml`:
 
 1. **Faster Setup**: One command (`pixi install`) sets up everything
 2. **Reproducible**: Lock file ensures everyone has identical environments
-3. **Cross-Platform**: Works identically on Linux, macOS, and Windows
+3. **Cross-Platform**: Works identically on Linux, macOS
 4. **Task Runner**: Built-in task definitions for common operations
 5. **Multiple Environments**: Easy switching between dev/prod/minimal setups
 
@@ -160,7 +160,7 @@ The `pyproject.toml` is maintained for pip compatibility.
 - ✅ `pixi install` - Fast, reproducible environment setup
 - ✅ `pixi run <task>` - Task runner for common operations
 - ✅ Multiple environments - dev/prod/minimal/docs
-- ✅ Cross-platform testing - CI runs on Linux/macOS/Windows
+- ✅ Cross-platform testing - CI runs on Linux/macOS
 - ✅ Lock file - `pixi.lock` ensures reproducibility
 
 ## Dependency Resolution

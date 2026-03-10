@@ -284,7 +284,7 @@ For a pure Python approach:
 ```bash
 # Create virtual environment
 python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+source .venv/bin/activate
 
 # Install in editable mode with dev dependencies
 pip install -e '.[dev]'
