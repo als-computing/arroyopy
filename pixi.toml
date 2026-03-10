@@ -1,0 +1,69 @@
+[workspace]
+channels = ["conda-forge"]
+platforms = ["osx-64", "osx-arm64", "linux-64", "linux-aarch64"]
+
+[tasks]
+# Development tasks
+test = "pytest src/_test/"
+test-verbose = "pytest src/_test/ -v"
+test-cov = "pytest src/_test/ --cov=src/arroyopy --cov-report=term-missing --cov-report=html"
+test-cov-ci = "pytest src/_test/ --cov=src/arroyopy --cov-report=term --cov-fail-under=90"
+lint = "flake8 src/"
+format-check = "black --check src/"
+format = "black src/"
+pre-commit = "pre-commit run --all-files"
+pre-commit-install = "pre-commit install"
+
+# Build tasks
+build = "pip install build && python -m build"
+clean = "rm -rf build dist *.egg-info .pytest_cache .coverage htmlcov"
+
+# Run tasks
+arroyo = "python -m arroyopy.cli"
+
+[dependencies]
+python = ">=3.11,<3.13"
+pip = "*"
+
+# Install arroyopy package with its dependencies from pyproject.toml
+[pypi-dependencies]
+arroyopy = { path = ".", editable = true }
+
+[feature.dev]
+# Development extras from pyproject.toml
+pypi-dependencies.arroyopy = { path = ".", editable = true, extras = ["dev"] }
+
+[feature.zmq]
+pypi-dependencies.arroyopy = { path = ".", editable = true, extras = ["zmq"] }
+
+[feature.redis]
+pypi-dependencies.arroyopy = { path = ".", editable = true, extras = ["redis"] }
+
+[feature.file-watch]
+pypi-dependencies.arroyopy = { path = ".", editable = true, extras = ["file-watch"] }
+
+[feature.docs.dependencies]
+mkdocs = "*"
+mkdocs-material = "*"
+mkdocstrings = "*"
+mkdocstrings-python = "*"
+
+[feature.dev.tasks]
+# Additional dev tasks that require dev dependencies
+test-watch = "pytest-watch src/_test/"
+
+[environments]
+# Default environment with optional features (for normal usage)
+default = { features = ["zmq", "redis", "file-watch"], solve-group = "default" }
+
+# Development environment with all dev tools
+dev = { features = ["dev", "zmq", "redis", "file-watch"], solve-group = "default" }
+
+# Production-like environment with optional features
+prod = { features = ["zmq", "redis", "file-watch"], solve-group = "default" }
+
+# Minimal environment for testing core functionality
+minimal = { solve-group = "default" }
+
+# Documentation environment
+docs = { features = ["docs"], solve-group = "default" }
