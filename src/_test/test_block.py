@@ -2,6 +2,7 @@
 Block tests for the Block class and configuration system.
 """
 
+import asyncio
 import tempfile
 from pathlib import Path
 from unittest.mock import AsyncMock, Mock
@@ -527,8 +528,6 @@ async def test_unit_start_stop(mock_operator, mock_listener):
     listener.start.return_value = None
 
     # Start the block (with timeout to prevent hanging)
-    import asyncio
-
     start_task = asyncio.create_task(block.start())
 
     # Give it a moment to start
@@ -547,6 +546,43 @@ async def test_unit_start_stop(mock_operator, mock_listener):
     # Verify start was called
     mock_operator.start.assert_called_once()
     listener.stop.assert_called()
+
+
+@pytest.mark.asyncio
+async def test_operator_start_runs_in_background(mock_operator, mock_listener):
+    """Test that operator.start() is run as a background task.
+
+    If operator.start() were awaited directly, it would block forever and
+    listeners would never be started. This test verifies that listeners are
+    started even when the operator's start() never returns.
+    """
+    block = Block(name="test_unit", operator=mock_operator)
+    listener = mock_listener(mock_operator)
+
+    # Operator start() that blocks indefinitely - simulates a real operator loop
+    blocking_event = asyncio.Event()
+
+    async def blocking_start():
+        await blocking_event.wait()
+
+    mock_operator.start = AsyncMock(side_effect=blocking_start)
+    await block.add_listener(listener)
+
+    # Run block.start() with a short timeout; if operator was awaited directly
+    # this gather would never reach the listener and would time out
+    start_task = asyncio.create_task(block.start())
+    await asyncio.sleep(0.1)
+
+    # Listener should have been started despite operator never returning
+    listener.start.assert_called_once()
+
+    # Cleanup
+    blocking_event.set()
+    start_task.cancel()
+    try:
+        await start_task
+    except asyncio.CancelledError:
+        pass
 
 
 @pytest.mark.asyncio

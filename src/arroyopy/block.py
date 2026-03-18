@@ -139,8 +139,8 @@ class Block:
 
         self._running = True
 
-        # Start the operator
-        await self.operator.start()
+        # Start the operator as a background task (it runs an infinite loop)
+        asyncio.create_task(self.operator.start())
 
         # Start all listeners as separate tasks
         for listener in self._listeners:

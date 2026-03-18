@@ -4,10 +4,6 @@ platforms = ["osx-64", "osx-arm64", "linux-64", "linux-aarch64"]
 
 [tasks]
 # Development tasks
-test = "pytest src/_test/"
-test-verbose = "pytest src/_test/ -v"
-test-cov = "pytest src/_test/ --cov=src/arroyopy --cov-report=term-missing --cov-report=html"
-test-cov-ci = "pytest src/_test/ --cov=src/arroyopy --cov-report=term --cov-fail-under=90"
 lint = "flake8 src/"
 format-check = "black --check src/"
 format = "black src/"
@@ -49,7 +45,11 @@ mkdocstrings = "*"
 mkdocstrings-python = "*"
 
 [feature.dev.tasks]
-# Additional dev tasks that require dev dependencies
+# Test tasks require dev dependencies (run with: pixi run -e dev <task>)
+test = "pytest src/_test/"
+test-verbose = "pytest src/_test/ -v"
+test-cov = "pytest src/_test/ --cov=src/arroyopy --cov-report=term-missing --cov-report=html"
+test-cov-ci = "pytest src/_test/ --cov=src/arroyopy --cov-report=term --cov-fail-under=90"
 test-watch = "pytest-watch src/_test/"
 
 [environments]
