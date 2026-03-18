@@ -7,8 +7,24 @@ on:
     branches: [main]
 
 jobs:
+  validate-lock-file:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Pixi
+      uses: prefix-dev/setup-pixi@v0.8.1
+      with:
+        pixi-version: v0.63.2
+        # Don't install anything, just setup pixi
+        install-flags: "--no-install"
+
+    - name: Check if lock file is up to date
+      run: pixi lock --check
+
   # Test using pixi (recommended)
   test-pixi:
+    needs: validate-lock-file
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -23,7 +39,8 @@ jobs:
       with:
         pixi-version: v0.63.2
         environments: dev
-        cache: false
+        # The lock file is already validated, so we can use --frozen
+        install-flags: "--frozen"
 
     - name: Lint with flake8
       run: pixi run -e dev lint
