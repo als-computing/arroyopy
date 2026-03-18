@@ -1,7 +1,7 @@
 import numpy
 import numpy.typing
 import pandas
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class Message:
@@ -37,6 +37,8 @@ class DataFrameModel(BaseModel):
     Does not parse array, merely validates that is a pd.DataFrame
     """
 
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     df: pandas.DataFrame
 
     @field_validator("df", mode="before")
@@ -45,15 +47,14 @@ class DataFrameModel(BaseModel):
             raise TypeError(f"Expected pd.DataFrame, got {type(v)} instead.")
         return v  # Do not modify or parse the array
 
-    class Config:
-        arbitrary_types_allowed = True  # Allow numpy.ndarray type
-
 
 class NumpyArrayModel(BaseModel):
     """
     A Pydantic model for validating numpy.ndarray objects.
     Does not parse array, merely validates that is a np.ndarray
     """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     array: numpy.ndarray
 
@@ -62,6 +63,3 @@ class NumpyArrayModel(BaseModel):
         if not isinstance(v, numpy.ndarray):
             raise TypeError(f"Expected numpy.ndarray, got {type(v)} instead.")
         return v  # Do not modify or parse the array
-
-    class Config:
-        arbitrary_types_allowed = True  # Allow numpy.ndarray type
