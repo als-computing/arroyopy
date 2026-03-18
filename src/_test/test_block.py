@@ -586,6 +586,49 @@ async def test_operator_start_runs_in_background(mock_operator, mock_listener):
 
 
 @pytest.mark.asyncio
+async def test_stop_cancels_tasks(mock_operator, mock_listener):
+    """Test that stop() cancels tasks that haven't finished on their own."""
+    block = Block(name="test_unit", operator=mock_operator)
+    listener = mock_listener(mock_operator)
+
+    # Listener start() that blocks indefinitely until cancelled
+    async def blocking_listener_start():
+        await asyncio.Event().wait()
+
+    listener.start = AsyncMock(side_effect=blocking_listener_start)
+
+    # Operator start() that also blocks
+    async def blocking_operator_start():
+        await asyncio.Event().wait()
+
+    mock_operator.start = AsyncMock(side_effect=blocking_operator_start)
+    mock_operator.stop_requested = False
+
+    await block.add_listener(listener)
+
+    start_task = asyncio.create_task(block.start())
+    await asyncio.sleep(0.1)
+
+    # Tasks should be running
+    assert len(block._listener_tasks) == 1
+    assert not block._listener_tasks[0].done()
+    assert block._operator_task is not None
+    assert not block._operator_task.done()
+
+    # stop() should cancel remaining tasks and clean up
+    await block.stop()
+
+    assert block._operator_task is None
+    assert len(block._listener_tasks) == 0
+
+    start_task.cancel()
+    try:
+        await start_task
+    except asyncio.CancelledError:
+        pass
+
+
+@pytest.mark.asyncio
 async def test_unit_stop_when_not_running(mock_operator):
     """Test stopping a block that isn't running."""
     block = Block(name="test_unit", operator=mock_operator)

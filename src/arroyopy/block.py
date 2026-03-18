@@ -76,6 +76,7 @@ class Block:
         self._listeners: List[Listener] = listeners or []
         self._publishers: List[Publisher] = publishers or []
         self._running = False
+        self._operator_task: Optional[asyncio.Task] = None
         self._listener_tasks: List[asyncio.Task] = []
 
         # Wire up publishers to operator (sync operation)
@@ -140,7 +141,7 @@ class Block:
         self._running = True
 
         # Start the operator as a background task (it runs an infinite loop)
-        asyncio.create_task(self.operator.start())
+        self._operator_task = asyncio.create_task(self.operator.start())
 
         # Start all listeners as separate tasks
         for listener in self._listeners:
@@ -167,9 +168,21 @@ class Block:
         self._running = False
         self.operator.stop_requested = True
 
-        # Stop all listeners
+        # Gracefully signal all listeners to stop
         for listener in self._listeners:
             await listener.stop()
+
+        # Cancel any tasks that haven't finished on their own
+        all_tasks = self._listener_tasks.copy()
+        if self._operator_task is not None:
+            all_tasks.append(self._operator_task)
+        for task in all_tasks:
+            if not task.done():
+                task.cancel()
+        if all_tasks:
+            await asyncio.gather(*all_tasks, return_exceptions=True)
+        self._listener_tasks.clear()
+        self._operator_task = None
 
         logger.info(f"Block '{self.name}' stopped")
 
