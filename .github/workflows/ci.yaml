@@ -20,7 +20,9 @@ jobs:
         cache: false
 
     - name: Check if lock file is up to date
-      run: pixi lock --check
+      run: |
+        pixi lock
+        git diff --exit-code pixi.lock
 
   # Test using pixi (recommended)
   test-pixi:
