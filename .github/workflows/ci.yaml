@@ -23,6 +23,7 @@ jobs:
       with:
         pixi-version: v0.63.2
         environments: dev
+        cache: false
 
     - name: Lint with flake8
       run: pixi run -e dev lint
