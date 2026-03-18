@@ -4,6 +4,7 @@ from redis.asyncio.client import Redis
 
 from .listener import Listener
 from .operator import Operator
+from .publisher import Publisher
 
 logger = logging.getLogger("arroyo.zmq")
 
@@ -47,7 +48,7 @@ class RedisListener(Listener):
         await self.redis_client.aclose()
 
 
-class RedisPublisher:
+class RedisPublisher(Publisher):
     def __init__(self, redis_client: Redis, redis_channel_name: str):
         self.redis_client: Redis = redis_client
         self.redis_channel_name = redis_channel_name
