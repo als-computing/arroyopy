@@ -7,6 +7,21 @@ on:
     branches: [main]
 
 jobs:
+  validate-lock-file:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Pixi
+      uses: prefix-dev/setup-pixi@v0.8.1
+      with:
+        pixi-version: v0.63.2
+        environments: dev
+        cache: false
+
+    - name: Check if lock file is up to date
+      run: pixi lock --check
+
   # Test using pixi (recommended)
   test-pixi:
     runs-on: ${{ matrix.os }}
