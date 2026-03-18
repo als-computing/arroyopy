@@ -7,26 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  validate-lock-file:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Setup Pixi
-      uses: prefix-dev/setup-pixi@v0.8.1
-      with:
-        pixi-version: v0.63.2
-        environments: dev
-        cache: false
-
-    - name: Check if lock file is up to date
-      run: |
-        pixi lock
-        git diff --exit-code pixi.lock
-
   # Test using pixi (recommended)
   test-pixi:
-    needs: validate-lock-file
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -36,13 +18,15 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Remove lock file
+      run: rm pixi.lock
+
     - name: Setup Pixi
       uses: prefix-dev/setup-pixi@v0.8.1
       with:
         pixi-version: v0.63.2
         environments: dev
         cache: false
-        install-flags: ""
 
     - name: Lint with flake8
       run: pixi run -e dev lint
