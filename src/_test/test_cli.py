@@ -128,10 +128,8 @@ class TestBusinessLogic:
     @pytest.mark.asyncio
     async def test_run_units_async(self, mock_units, caplog):
         """Test running blocks concurrently."""
-        logger = logging.getLogger(__name__)
-
         with caplog.at_level(logging.INFO):
-            await run_units_async(mock_units, logger)
+            await run_units_async(mock_units)
 
         # Verify all blocks were started
         for block in mock_units:
@@ -140,10 +138,8 @@ class TestBusinessLogic:
 
     def test_validate_units_info(self, mock_units, caplog):
         """Test validation info logging."""
-        logger = logging.getLogger(__name__)
-
         with caplog.at_level(logging.INFO):
-            validate_units_info(mock_units, logger)
+            validate_units_info(mock_units)
 
         # Verify validation messages
         assert "Configuration is valid" in caplog.text

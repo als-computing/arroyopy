@@ -24,8 +24,7 @@ app = typer.Typer(
     help="Arroyo block runner - Run stream processing pipelines from config files"
 )
 
-# Global list to track running blocks for graceful shutdown
-running_blocks: List[Block] = []
+logger = logging.getLogger(__name__)
 
 
 # ============================================================================
@@ -33,23 +32,39 @@ running_blocks: List[Block] = []
 # ============================================================================
 
 
-async def run_units_async(blocks: List[Block], logger: logging.Logger) -> None:
+async def run_units_async(blocks: List[Block]) -> None:
     """
     Run multiple blocks concurrently.
 
     Pure async function that can be tested directly.
     """
+    loop = asyncio.get_running_loop()
+
+    async def _shutdown():
+        await shutdown_units(blocks)
+        for task in asyncio.all_tasks():
+            if task is not asyncio.current_task():
+                task.cancel()
+
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        loop.add_signal_handler(sig, lambda: asyncio.create_task(_shutdown()))
+
     tasks = []
     for block in blocks:
         logger.info(f"Starting block '{block.name}'")
         task = asyncio.create_task(block.start())
         tasks.append(task)
 
-    # Wait for all blocks to complete
-    await asyncio.gather(*tasks)
+    try:
+        await asyncio.gather(*tasks)
+    except asyncio.CancelledError:
+        pass
+    finally:
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            loop.remove_signal_handler(sig)
 
 
-def validate_units_info(blocks: List[Block], logger: logging.Logger) -> None:
+def validate_units_info(blocks: List[Block]) -> None:
     """
     Validate and log information about blocks.
 
@@ -98,7 +113,6 @@ def setup_logging(verbose: bool = False):
 
 async def shutdown_units(blocks: List[Block]):
     """Gracefully shutdown all blocks."""
-    logger = logging.getLogger(__name__)
     logger.info(f"Shutting down {len(blocks)} unit(s)...")
 
     for block in blocks:
@@ -108,19 +122,6 @@ async def shutdown_units(blocks: List[Block]):
             logger.error(f"Error stopping block '{block.name}': {e}")
 
     logger.info("All blocks stopped")
-
-
-def signal_handler(signum, frame):
-    """Handle shutdown signals."""
-    logger = logging.getLogger(__name__)
-    logger.info(f"Received signal {signum}")
-
-    # Run async shutdown
-    loop = asyncio.get_event_loop()
-    if running_blocks:
-        loop.create_task(shutdown_units(running_blocks))
-
-    sys.exit(0)
 
 
 @app.command()
@@ -148,7 +149,6 @@ def run(
         arroyo run pipeline.yaml --verbose
     """
     setup_logging(verbose)
-    logger = logging.getLogger(__name__)
 
     # Check if config file exists
     if not Path(config_file).exists():
@@ -170,15 +170,8 @@ def run(
             logger.info(f"Loading blocks from {config_file}")
             blocks = load_blocks_from_yaml(config_file)
 
-        # Add to global list for signal handling
-        running_blocks.extend(blocks)
-
-        # Set up signal handlers for graceful shutdown
-        signal.signal(signal.SIGINT, signal_handler)
-        signal.signal(signal.SIGTERM, signal_handler)
-
         # Run blocks using extracted business logic
-        asyncio.run(run_units_async(blocks, logger))
+        asyncio.run(run_units_async(blocks))
 
     except ConfigurationError as e:
         logger.error(f"Configuration error: {e}")
@@ -206,7 +199,6 @@ def validate(
         arroyo validate pipeline.yaml
     """
     setup_logging(verbose)
-    logger = logging.getLogger(__name__)
 
     if not Path(config_file).exists():
         logger.error(f"Configuration file not found: {config_file}")
@@ -221,7 +213,7 @@ def validate(
         blocks = load_blocks_from_yaml(config_file)
 
         # Use extracted business logic
-        validate_units_info(blocks, logger)
+        validate_units_info(blocks)
 
         typer.echo("\nConfiguration is valid! ✓")
 
@@ -244,8 +236,6 @@ def list_blocks(
 
         arroyo list-blocks pipeline.yaml
     """
-    logger = logging.getLogger(__name__)
-
     if not Path(config_file).exists():
         logger.error(f"Configuration file not found: {config_file}")
         raise typer.Exit(code=1)
