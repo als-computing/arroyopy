@@ -47,6 +47,6 @@ class Operator(ABC):
                 for listener in self.listeners:
                     await listener.stop()
                 break
-            message = await self.queue.get()
+            message = await self.listener_queue.get()
             processed_message = await self.process(message)
             await self.publish(processed_message)
