@@ -48,6 +48,13 @@ class RedisListener(Listener):
         await self.redis_client.aclose()
 
 
+def redis_listener_factory(
+    redis_uri: str, redis_channel_name: str, operator: Operator = None
+) -> RedisListener:
+    redis_client = Redis(redis_uri)
+    return RedisListener(redis_client, redis_channel_name)
+
+
 class RedisPublisher(Publisher):
     def __init__(self, redis_client: Redis, redis_channel_name: str):
         self.redis_client: Redis = redis_client

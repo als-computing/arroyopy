@@ -35,6 +35,9 @@ class Operator(ABC):
     def remove_publisher(self, publisher: Publisher) -> None:
         self.publishers.remove(publisher)
 
+    async def notify(self, message: Message) -> None:
+        await self.listener_queue.put(message)
+
     async def publish(self, message: Message) -> None:
         for publisher in self.publishers:
             await publisher.publish(message)
