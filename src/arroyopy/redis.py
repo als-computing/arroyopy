@@ -10,14 +10,19 @@ logger = logging.getLogger("arroyo.zmq")
 
 
 class RedisListener(Listener):
-    def __init__(self, redis_client: Redis, redis_channel_name: str):
+    def __init__(
+        self, redis_client: Redis, redis_channel_name: str, operator: Operator
+    ):
         self.stop_requested = False
         self.redis_client: Redis = redis_client
         self.redis_channel_name = redis_channel_name
+        self.operator = operator
 
     @classmethod
-    async def from_client(cls, redis_client: Redis, redis_channel_name: str):
-        return RedisListener(redis_client, redis_channel_name)
+    async def from_client(
+        cls, redis_client: Redis, redis_channel_name: str, operator: Operator
+    ):
+        return RedisListener(redis_client, redis_channel_name, operator)
 
     async def start(self):
         logger.info("Listener started")

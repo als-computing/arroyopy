@@ -1558,8 +1558,8 @@ packages:
   requires_python: '>=3.9'
 - pypi: ./
   name: arroyopy
-  version: 0.2.2
-  sha256: c6fdf2a9b564d18ebbecd592b255d38e1390a315a4098c2a13fab22db9dc38b7
+  version: 0.3.0a7
+  sha256: 76dc3179c409495f9e06776fc63c6c8572405029c82a82b1368b9ce9282c9500
   requires_dist:
   - python-dotenv
   - pandas
@@ -1581,7 +1581,7 @@ packages:
   - redis ; extra == 'redis'
   - tiled[client] ; extra == 'tiled'
   - watchfiles>=0.21.0 ; extra == 'file-watch'
-  requires_python: '>=3.11,<3.13'
+  requires_python: '>=3.11,<3.14'
 - pypi: https://files.pythonhosted.org/packages/d9/ab/6936e2663c47a926e0659437b9333ad87d1ff49b1375d239026e0a268eba/asgi_correlation_id-4.3.4-py3-none-any.whl
   name: asgi-correlation-id
   version: 4.3.4
