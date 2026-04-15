@@ -78,6 +78,7 @@ class Block:
         self._running = False
         self._operator_task: Optional[asyncio.Task] = None
         self._listener_tasks: List[asyncio.Task] = []
+        self._publisher_tasks: List[asyncio.Task] = []
 
         # Wire up publishers to operator (sync operation)
         for publisher in self._publishers:
@@ -127,7 +128,7 @@ class Block:
         """
         Start the block and begin processing.
 
-        This starts all listeners and the operator's processing loop.
+        This starts all publishers, listeners and the operator's processing loop.
         """
         if self._running:
             logger.warning(f"Block '{self.name}' is already running")
@@ -139,6 +140,13 @@ class Block:
         )
 
         self._running = True
+
+        # Start all publishers as background tasks
+        for publisher in self._publishers:
+            if hasattr(publisher, 'start'):
+                task = asyncio.create_task(publisher.start())
+                self._publisher_tasks.append(task)
+                logger.info(f"Started publisher: {publisher.__class__.__name__}")
 
         # Start the operator as a background task (it runs an infinite loop)
         self._operator_task = asyncio.create_task(self.operator.start())
@@ -157,7 +165,7 @@ class Block:
         """
         Stop the block and all its components.
 
-        This gracefully shuts down listeners and the operator.
+        This gracefully shuts down listeners, publishers and the operator.
         """
         if not self._running:
             logger.warning(f"Block '{self.name}' is not running")
@@ -176,12 +184,14 @@ class Block:
         all_tasks = self._listener_tasks.copy()
         if self._operator_task is not None:
             all_tasks.append(self._operator_task)
+        all_tasks.extend(self._publisher_tasks)
         for task in all_tasks:
             if not task.done():
                 task.cancel()
         if all_tasks:
             await asyncio.gather(*all_tasks, return_exceptions=True)
         self._listener_tasks.clear()
+        self._publisher_tasks.clear()
         self._operator_task = None
 
         logger.info(f"Block '{self.name}' stopped")
