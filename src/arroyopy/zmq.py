@@ -6,6 +6,7 @@ import zmq.asyncio
 
 from .listener import Listener
 from .operator import Operator
+from .telemetry import get_metrics_tracker
 
 logger = logging.getLogger("arroyo.zmq")
 
@@ -37,6 +38,9 @@ class ZMQListener(Listener):
 
     async def start(self):
         logger.info("Listener started")
+        metrics_tracker = get_metrics_tracker()
+        listener_type = self.__class__.__name__
+
         # timeout after 100 milliseconds so we can be stopped if requested
         self.zmq_socket.setsockopt(zmq.RCVTIMEO, 100)
         while True:
@@ -46,6 +50,10 @@ class ZMQListener(Listener):
                 msg = await self.zmq_socket.recv()
                 if logger.getEffectiveLevel() == logging.DEBUG:
                     logger.debug(f"{msg=}")
+
+                # Record message metrics
+                metrics_tracker.record_message(listener_type)
+
                 await self.operator.process(msg)
             except zmq.Again:
                 # no message occured within the timeout period

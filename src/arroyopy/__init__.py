@@ -8,6 +8,7 @@ from .config import (
 from .listener import Listener
 from .operator import Operator
 from .publisher import Publisher
+from .telemetry import get_metrics_tracker, init_telemetry, traced
 
 __all__ = [
     "Listener",
@@ -18,6 +19,9 @@ __all__ = [
     "load_blocks_from_yaml",
     "load_block_from_yaml",
     "ConfigurationError",
+    "init_telemetry",
+    "traced",
+    "get_metrics_tracker",
 ]
 
 # Make flake8 happy by using the names

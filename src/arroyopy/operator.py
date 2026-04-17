@@ -1,11 +1,13 @@
 import asyncio
 import logging
+import time
 from abc import ABC, abstractmethod
 from typing import List
 
 from .listener import Listener
 from .publisher import Publisher
 from .schemas import Message
+from .telemetry import get_metrics_tracker
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +46,9 @@ class Operator(ABC):
 
     async def start(self):
         # Process messages from the queue
+        metrics_tracker = get_metrics_tracker()
+        operator_type = self.__class__.__name__
+
         while True:
             if self.stop_requested:
                 logger.info("Stopping operator...")
@@ -51,5 +56,13 @@ class Operator(ABC):
                     await listener.stop()
                 break
             message = await self.listener_queue.get()
+
+            # Track processing time
+            start_time = time.perf_counter()
             processed_message = await self.process(message)
+            duration = time.perf_counter() - start_time
+
+            # Record metrics
+            metrics_tracker.record_processing_time(operator_type, duration)
+
             await self.publish(processed_message)
