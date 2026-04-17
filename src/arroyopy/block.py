@@ -6,6 +6,7 @@ A Block represents a complete processing block in arroyo with:
 - Any number of listeners (sources) that feed the operator
 - Any number of publishers (sinks) that receive processed messages
 """
+
 import asyncio
 import logging
 from typing import List, Optional
@@ -143,7 +144,7 @@ class Block:
 
         # Start all publishers as background tasks
         for publisher in self._publishers:
-            if hasattr(publisher, 'start'):
+            if hasattr(publisher, "start"):
                 task = asyncio.create_task(publisher.start())
                 self._publisher_tasks.append(task)
                 logger.info(f"Started publisher: {publisher.__class__.__name__}")
