@@ -1,0 +1,43 @@
+# Example arroyo block configuration with environment variable substitution
+#
+# This configuration demonstrates how to use environment variables in your
+# YAML configuration files. Environment variables are expanded when the
+# configuration is loaded.
+#
+# Supported formats:
+# - ${VAR_NAME}              - Replace with environment variable value (error if not set)
+# - ${VAR_NAME:-default}     - Replace with env var, or use default if not set
+# - $VAR_NAME                - Simple variable expansion (error if not set)
+#
+# Example usage:
+#   export ZMQ_INPUT_ADDRESS="tcp://127.0.0.1:5555"
+#   export ZMQ_OUTPUT_ADDRESS="tcp://127.0.0.1:5556"
+#   export MESSAGE_TIMEOUT="30"
+#   python -m arroyopy run examples/config/env_var_example.yaml
+
+blocks:
+  - name: zmq_pipeline_with_env_vars
+    description: Pipeline using environment variables for configuration
+
+    operator:
+      class: myapp.operators.MessageProcessor
+      kwargs:
+        # Use env var with default fallback
+        timeout: ${MESSAGE_TIMEOUT:-60}
+        batch_size: ${BATCH_SIZE:-100}
+
+    listeners:
+      - class: arroyopy.zmq.ZMQListener
+        kwargs:
+          # Use env var (required - will fail if not set)
+          address: ${ZMQ_INPUT_ADDRESS}
+          socket_type: ${ZMQ_INPUT_TYPE:-SUB}
+
+    publishers:
+      - class: arroyopy.zmq.ZMQPublisher
+        kwargs:
+          # Mix env vars and defaults
+          address: ${ZMQ_OUTPUT_ADDRESS}
+          socket_type: ${ZMQ_OUTPUT_TYPE:-PUB}
+          # Simple $VAR syntax also works
+          topic: $TOPIC_NAME

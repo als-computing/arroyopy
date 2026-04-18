@@ -33,6 +33,21 @@ class ConcreteOperator(Operator):
         return message
 
 
+# Concrete listener for YAML/config loading tests
+class ConcreteListener(Listener):
+    """Simple concrete listener for testing."""
+
+    def __init__(self, operator=None, **kwargs):
+        super().__init__(operator)
+        self.kwargs = kwargs
+
+    async def start(self) -> None:
+        pass
+
+    async def stop(self) -> None:
+        pass
+
+
 # Simple class for testing invalid type validation
 class NotAComponent:
     """A class that is not a Listener, Publisher, or Operator."""
@@ -778,6 +793,172 @@ async def test_operator_start_stop_loop():
     listener.stop.assert_called()
     # Verify the publisher was called at least once
     assert publisher.publish.called
+
+
+# ============================================================================
+# Environment variable expansion tests
+# ============================================================================
+
+
+def test_env_var_expansion_basic(monkeypatch):
+    """Test basic environment variable expansion in config."""
+    monkeypatch.setenv("TEST_ADDRESS", "tcp://127.0.0.1:5555")
+
+    yaml_content = """
+blocks:
+  - name: test_unit
+    operator:
+      class: _test.test_block.ConcreteOperator
+    listeners:
+      - class: _test.test_block.ConcreteListener
+        kwargs:
+          address: ${TEST_ADDRESS}
+"""
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        f.write(yaml_content)
+        yaml_path = f.name
+
+    try:
+        blocks = load_blocks_from_yaml(yaml_path)
+        assert len(blocks) == 1
+        # Environment variable was expanded
+    finally:
+        Path(yaml_path).unlink()
+
+
+def test_env_var_expansion_with_default(monkeypatch):
+    """Test environment variable expansion with default values."""
+    # Don't set TEST_MISSING so it uses the default
+
+    yaml_content = """
+blocks:
+  - name: test_unit
+    operator:
+      class: _test.test_block.ConcreteOperator
+    listeners:
+      - class: _test.test_block.ConcreteListener
+        kwargs:
+          address: ${TEST_MISSING:-tcp://localhost:9999}
+"""
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        f.write(yaml_content)
+        yaml_path = f.name
+
+    try:
+        blocks = load_blocks_from_yaml(yaml_path)
+        assert len(blocks) == 1
+        # The defaults should be used
+    finally:
+        Path(yaml_path).unlink()
+
+
+def test_env_var_expansion_missing_no_default(monkeypatch):
+    """Test that missing env var without default raises error."""
+    yaml_content = """
+blocks:
+  - name: test_unit
+    operator:
+      class: _test.test_block.ConcreteOperator
+    listeners:
+      - class: _test.test_block.ConcreteListener
+        kwargs:
+          address: ${MISSING_VAR}
+"""
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        f.write(yaml_content)
+        yaml_path = f.name
+
+    try:
+        with pytest.raises(
+            ConfigurationError, match="Environment variable 'MISSING_VAR' is not set"
+        ):
+            load_blocks_from_yaml(yaml_path)
+    finally:
+        Path(yaml_path).unlink()
+
+
+def test_env_var_expansion_in_nested_values(monkeypatch):
+    """Test environment variable expansion in nested config values."""
+    monkeypatch.setenv("REDIS_HOST", "redis.example.com")
+    monkeypatch.setenv("REDIS_PORT", "6379")
+
+    yaml_content = """
+blocks:
+  - name: test_unit
+    operator:
+      class: _test.test_block.ConcreteOperator
+    listeners:
+      - class: _test.test_block.ConcreteListener
+        kwargs:
+          connection_string: redis://${REDIS_HOST}:${REDIS_PORT}
+          timeout: ${TIMEOUT:-30}
+"""
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        f.write(yaml_content)
+        yaml_path = f.name
+
+    try:
+        blocks = load_blocks_from_yaml(yaml_path)
+        assert len(blocks) == 1
+        # Connection string should have env vars expanded
+    finally:
+        Path(yaml_path).unlink()
+
+
+def test_env_var_expansion_simple_syntax(monkeypatch):
+    """Test simple $VAR syntax for environment variables."""
+    monkeypatch.setenv("SIMPLE_VAR", "test_value")
+
+    yaml_content = """
+blocks:
+  - name: test_unit_$SIMPLE_VAR
+    operator:
+      class: _test.test_block.ConcreteOperator
+"""
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        f.write(yaml_content)
+        yaml_path = f.name
+
+    try:
+        blocks = load_blocks_from_yaml(yaml_path)
+        assert len(blocks) == 1
+        assert blocks[0].name == "test_unit_test_value"
+    finally:
+        Path(yaml_path).unlink()
+
+
+def test_env_var_no_expansion_for_non_strings(monkeypatch):
+    """Test that non-string values are not affected by env var expansion."""
+    monkeypatch.setenv("PORT", "5555")
+
+    yaml_content = """
+blocks:
+  - name: test_unit
+    operator:
+      class: _test.test_block.ConcreteOperator
+    listeners:
+      - class: _test.test_block.ConcreteListener
+        kwargs:
+          port: 8080
+          enabled: true
+          ratio: 0.5
+"""
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        f.write(yaml_content)
+        yaml_path = f.name
+
+    try:
+        blocks = load_blocks_from_yaml(yaml_path)
+        assert len(blocks) == 1
+        # Non-string values should remain unchanged
+    finally:
+        Path(yaml_path).unlink()
 
 
 # ============================================================================

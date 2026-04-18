@@ -6,6 +6,8 @@ from YAML configuration files, enabling declarative pipeline definitions.
 """
 import importlib
 import logging
+import os
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Type
 
@@ -23,6 +25,102 @@ class ConfigurationError(Exception):
     """Raised when there's an error in the configuration."""
 
     pass
+
+
+def _expand_env_var(value: str) -> str:
+    """
+    Expand environment variables in a string.
+
+    Supports the following formats:
+    - ${VAR_NAME} - Replace with environment variable value
+    - ${VAR_NAME:-default_value} - Replace with env var, or default if not set
+    - $VAR_NAME - Simple variable expansion
+
+    Parameters
+    ----------
+    value : str
+        String potentially containing environment variable references
+
+    Returns
+    -------
+    str
+        String with environment variables expanded
+
+    Example
+    -------
+    >>> os.environ['MY_VAR'] = 'test'
+    >>> _expand_env_var('${MY_VAR}')
+    'test'
+    >>> _expand_env_var('${MISSING:-default}')
+    'default'
+    """
+
+    # Pattern for ${VAR_NAME:-default} or ${VAR_NAME}
+    def replace_with_default(match):
+        var_expr = match.group(1)
+        if ":-" in var_expr:
+            var_name, default_value = var_expr.split(":-", 1)
+            return os.environ.get(var_name, default_value)
+        else:
+            var_name = var_expr
+            env_value = os.environ.get(var_name)
+            if env_value is None:
+                raise ConfigurationError(
+                    f"Environment variable '{var_name}' is not set and no default provided"
+                )
+            return env_value
+
+    # Replace ${VAR} and ${VAR:-default}
+    value = re.sub(r"\$\{([^}]+)\}", replace_with_default, value)
+
+    # Replace simple $VAR (word boundaries to avoid partial matches)
+    def replace_simple(match):
+        var_name = match.group(1)
+        env_value = os.environ.get(var_name)
+        if env_value is None:
+            raise ConfigurationError(
+                f"Environment variable '{var_name}' is not set and no default provided"
+            )
+        return env_value
+
+    value = re.sub(r"\$(\w+)", replace_simple, value)
+
+    return value
+
+
+def _expand_env_vars_in_config(config: Any) -> Any:
+    """
+    Recursively expand environment variables in configuration values.
+
+    Processes dictionaries, lists, and strings to replace environment variable
+    references with their actual values.
+
+    Parameters
+    ----------
+    config : Any
+        Configuration value (dict, list, str, or other type)
+
+    Returns
+    -------
+    Any
+        Configuration with environment variables expanded
+
+    Example
+    -------
+    >>> os.environ['PORT'] = '5555'
+    >>> config = {'address': 'tcp://127.0.0.1:${PORT}'}
+    >>> _expand_env_vars_in_config(config)
+    {'address': 'tcp://127.0.0.1:5555'}
+    """
+    if isinstance(config, dict):
+        return {key: _expand_env_vars_in_config(value) for key, value in config.items()}
+    elif isinstance(config, list):
+        return [_expand_env_vars_in_config(item) for item in config]
+    elif isinstance(config, str):
+        return _expand_env_var(config)
+    else:
+        # Return other types (int, bool, etc.) unchanged
+        return config
 
 
 def _import_class(class_path: str) -> Type:
@@ -228,6 +326,9 @@ def load_blocks_from_yaml(yaml_path: str) -> List[Block]:
 
     if data is None:
         raise ConfigurationError("Configuration file is empty")
+
+    # Expand environment variables in the loaded data
+    data = _expand_env_vars_in_config(data)
 
     # Require 'blocks' key
     if "blocks" not in data:
