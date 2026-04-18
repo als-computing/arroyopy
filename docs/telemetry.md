@@ -68,24 +68,41 @@ init_telemetry()
 # Or customize settings
 init_telemetry(
     service_name="my-app",
-    jaeger_host="jaeger.example.com",
-    jaeger_port=6831
+    otlp_endpoint="http://jaeger.example.com:4317"
 )
 ```
 
 If you don't call `init_telemetry()`, it will be automatically initialized with default settings when the first `@traced` decorator is used.
 
-### 3. Start Jaeger (for viewing traces)
+### 3. Start Observability Stack
+
+The repository includes a docker-compose setup with Jaeger, Prometheus, and Grafana:
 
 ```bash
-# Using Docker
+# Start full observability stack (recommended)
+docker-compose up -d
+
+# Or start services individually
+docker-compose up -d jaeger      # Just tracing
+docker-compose up -d prometheus  # Just metrics collection
+docker-compose up -d grafana     # Just visualization
+
+# Access points:
+# - Jaeger UI:    http://localhost:16686
+# - Prometheus:   http://localhost:9090
+# - Grafana:      http://localhost:3000 (admin/admin)
+```
+
+Alternatively, run Jaeger directly with Docker:
+
+```bash
 docker run -d \
-  -p 6831:6831/udp \
+  -p 4317:4317 \
   -p 16686:16686 \
   jaegertracing/all-in-one:latest
-
-# Access UI at http://localhost:16686
 ```
+
+See [DOCKER_SERVICES.md](../DOCKER_SERVICES.md) for full documentation on the observability stack.
 
 ### 4. Expose Prometheus Metrics
 
@@ -216,9 +233,8 @@ Metrics are collected automatically:
 You can configure tracing via environment variables:
 
 ```bash
-# Jaeger configuration
-export JAEGER_AGENT_HOST=localhost
-export JAEGER_AGENT_PORT=6831
+# OTLP configuration
+export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 export OTEL_SERVICE_NAME=my-arroyopy-app
 ```
 
@@ -229,8 +245,7 @@ from arroyopy import init_telemetry
 
 init_telemetry(
     service_name="my-app",
-    jaeger_host="localhost",
-    jaeger_port=6831
+    otlp_endpoint="http://localhost:4317"
 )
 ```
 
@@ -248,8 +263,8 @@ init_telemetry(
 ### Traces not appearing in Jaeger
 
 - Verify Jaeger is running: `curl http://localhost:16686`
-- Check Jaeger agent connection: host and port are correct
-- Ensure `init_telemetry()` was called
+- Check OTLP endpoint is accessible: `curl http://localhost:4317`
+- Ensure `init_telemetry()` was called with correct endpoint
 - Look for OpenTelemetry errors in logs
 
 ### Metrics not updating

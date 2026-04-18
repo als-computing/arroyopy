@@ -9,11 +9,11 @@ This example demonstrates:
 import asyncio
 import logging
 import random
+from typing import Any
 
 from prometheus_client import start_http_server
 
 from arroyopy import Operator, init_telemetry, traced
-from arroyopy.schemas import Message
 
 logging.basicConfig(level=logging.INFO)
 
@@ -22,7 +22,7 @@ class MetricsExampleOperator(Operator):
     """Example operator that processes messages with metrics collection."""
 
     @traced(span_name="process_message")
-    async def process(self, message: Message) -> Message:
+    async def process(self, message: Any) -> Any:
         """Process message with variable timing to demonstrate metrics."""
         # Simulate variable processing time
         processing_time = random.uniform(0.01, 0.5)
@@ -36,7 +36,7 @@ async def simulate_message_processing():
 
     # Simulate processing 100 messages
     for i in range(100):
-        message = Message(data={"id": i, "value": f"message_{i}"})
+        message = {"id": i, "value": f"message_{i}"}
         await operator.listener_queue.put(message)
 
         # Start operator processing in background

@@ -26,7 +26,7 @@ class TestTelemetryInit:
     def test_init_telemetry_custom(self):
         """Test initialization with custom parameters."""
         init_telemetry(
-            service_name="test-service", jaeger_host="testhost", jaeger_port=6832
+            service_name="test-service", otlp_endpoint="http://testhost:4317"
         )
         tracer = get_tracer()
         assert tracer is not None

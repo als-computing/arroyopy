@@ -249,6 +249,35 @@ pixi run -e dev pre-commit-install
 pixi run -e dev clean
 ```
 
+### Docker Services for Development
+
+The repository includes a docker-compose setup with services for testing and observability:
+
+```bash
+# Start all services (Redis, Jaeger, Prometheus, Grafana)
+docker-compose up -d
+
+# Start specific services
+docker-compose up -d kvrocks     # Redis-compatible storage
+docker-compose up -d jaeger      # Distributed tracing
+docker-compose up -d prometheus  # Metrics collection
+docker-compose up -d grafana     # Metrics visualization
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+**Service Access:**
+- Jaeger UI: http://localhost:16686
+- Prometheus: http://localhost:9090
+- Grafana: http://localhost:3000 (admin/admin)
+- Redis: localhost:6379
+
+See [DOCKER_SERVICES.md](DOCKER_SERVICES.md) for detailed documentation.
+
 ### Using Different Environments
 
 ```bash

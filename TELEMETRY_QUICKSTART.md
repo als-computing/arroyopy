@@ -50,8 +50,7 @@ from arroyopy import init_telemetry
 
 init_telemetry(
     service_name="my-app",
-    jaeger_host="localhost",
-    jaeger_port=6831
+    otlp_endpoint="http://localhost:4317"
 )
 ```
 
@@ -97,11 +96,22 @@ start_http_server(8000)
    pixi install  # or pip install -e .
    ```
 
-2. **Start Jaeger (for tracing):**
+2. **Start observability stack:**
    ```bash
-   docker run -d -p 6831:6831/udp -p 16686:16686 jaegertracing/all-in-one
+   # Option 1: Full stack (recommended) - Jaeger + Prometheus + Grafana
+   docker-compose up -d
+
+   # Option 2: Just Jaeger for tracing
+   docker-compose up -d jaeger
+
+   # Option 3: Using docker directly
+   docker run -d -p 4317:4317 -p 16686:16686 jaegertracing/all-in-one
    ```
-   View traces at: http://localhost:16686
+
+   **Access points:**
+   - Jaeger UI: http://localhost:16686
+   - Prometheus: http://localhost:9090
+   - Grafana: http://localhost:3000 (admin/admin)
 
 3. **Add metrics endpoint to your app:**
    ```python
@@ -115,6 +125,8 @@ start_http_server(8000)
    async def process(self, message):
        # your code
    ```
+
+See [DOCKER_SERVICES.md](DOCKER_SERVICES.md) for detailed docker-compose documentation.
 
 ## How It Works
 

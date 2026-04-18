@@ -6,7 +6,7 @@ import time
 from typing import Any, Callable, Optional
 
 from opentelemetry import trace
-from opentelemetry.exporter.jaeger.thrift import JaegerExporter
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
@@ -47,37 +47,34 @@ _tracer: Optional[trace.Tracer] = None
 
 def init_telemetry(
     service_name: str = "arroyopy",
-    jaeger_host: str = "localhost",
-    jaeger_port: int = 6831,
+    otlp_endpoint: str = "http://localhost:4317",
 ) -> None:
-    """Initialize OpenTelemetry tracing with Jaeger exporter.
+    """Initialize OpenTelemetry tracing with OTLP exporter.
 
     Parameters
     ----------
     service_name : str
         Name of the service for tracing
-    jaeger_host : str
-        Hostname of the Jaeger agent
-    jaeger_port : int
-        Port of the Jaeger agent
+    otlp_endpoint : str
+        OTLP endpoint URL (default: http://localhost:4317 for Jaeger)
+        For Jaeger: use http://localhost:4317
+        Can also be configured via OTEL_EXPORTER_OTLP_ENDPOINT env var
     """
     global _tracer_provider, _tracer
 
     resource = Resource(attributes={"service.name": service_name})
     _tracer_provider = TracerProvider(resource=resource)
 
-    jaeger_exporter = JaegerExporter(
-        agent_host_name=jaeger_host,
-        agent_port=jaeger_port,
+    otlp_exporter = OTLPSpanExporter(
+        endpoint=otlp_endpoint,
+        insecure=True,  # Use insecure connection for local development
     )
 
-    _tracer_provider.add_span_processor(BatchSpanProcessor(jaeger_exporter))
+    _tracer_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
     trace.set_tracer_provider(_tracer_provider)
     _tracer = trace.get_tracer(__name__)
 
-    logger.info(
-        f"OpenTelemetry initialized with Jaeger exporter at {jaeger_host}:{jaeger_port}"
-    )
+    logger.info(f"OpenTelemetry initialized with OTLP exporter at {otlp_endpoint}")
 
 
 def get_tracer() -> trace.Tracer:
