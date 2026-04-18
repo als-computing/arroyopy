@@ -79,7 +79,6 @@ def init_telemetry(
 
 def get_tracer() -> trace.Tracer:
     """Get the configured tracer, initializing if needed."""
-    global _tracer
     if _tracer is None:
         init_telemetry()
     return _tracer
