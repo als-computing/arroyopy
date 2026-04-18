@@ -1,0 +1,27 @@
+# Prometheus configuration for Arroyopy metrics
+
+global:
+  scrape_interval: 15s  # How frequently to scrape targets
+  evaluation_interval: 15s  # How frequently to evaluate rules
+
+# Scrape configurations
+scrape_configs:
+  # Arroyopy application metrics
+  - job_name: 'arroyopy'
+    static_configs:
+      - targets: ['host.docker.internal:8000']  # Default metrics port
+        labels:
+          service: 'arroyopy'
+          environment: 'development'
+
+    # Scrape more frequently for development
+    scrape_interval: 5s
+
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+# Note: For Linux, you may need to use the host's IP address instead of host.docker.internal
+# Find your IP with: ip addr show docker0 | grep inet
+# Then replace host.docker.internal with that IP (usually 172.17.0.1)

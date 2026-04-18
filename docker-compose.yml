@@ -19,7 +19,7 @@ services:
     ports:
       - "127.0.0.1:9090:9090"  # Prometheus UI
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro,z
       - prometheus-data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -37,7 +37,9 @@ services:
       - GF_USERS_ALLOW_SIGN_UP=false
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - ./config/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro,z
+      - ./config/grafana-dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro,z
+      - ./config/grafana-dashboard.json:/etc/grafana/provisioning/dashboards/arroyopy-dashboard.json:ro,z
     depends_on:
       - prometheus
     restart: unless-stopped
