@@ -9,6 +9,8 @@ format-check = "black --check src/"
 format = "black src/"
 pre-commit = "pre-commit run --all-files"
 pre-commit-install = "pre-commit install"
+example-telemetry = "python examples/telemetry_example.py"
+example-prometheus = "python examples/prometheus_example.py"
 
 # Build tasks
 build = "pip install build && python -m build"

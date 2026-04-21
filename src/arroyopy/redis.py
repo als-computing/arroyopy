@@ -5,6 +5,7 @@ from redis.asyncio.client import Redis
 from .listener import Listener
 from .operator import Operator
 from .publisher import Publisher
+from .telemetry import get_metrics_tracker
 
 logger = logging.getLogger("arroyo.zmq")
 
@@ -26,6 +27,9 @@ class RedisListener(Listener):
 
     async def start(self):
         logger.info("Listener started")
+        metrics_tracker = get_metrics_tracker()
+        listener_type = self.__class__.__name__
+
         pubsub = self.redis_client.pubsub()
         await pubsub.subscribe(self.redis_channel_name)
         # Listen for messages in the subscribed channel
@@ -41,6 +45,10 @@ class RedisListener(Listener):
             msg = raw_msg["data"]
             if logger.getEffectiveLevel() == logging.DEBUG:
                 logger.debug(f"{msg=}")
+
+            # Record message metrics
+            metrics_tracker.record_message(listener_type)
+
             await self.operator.process(msg)
 
     async def stop(self):
